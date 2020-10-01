@@ -46,12 +46,7 @@ class LocalGameService:
 
             # move / set next_step_cells
             # transfer state in cell-list / player-objects
-            
-
-                
-
         # kill player that crashed because of the next action
-
         # generate a JSON String with the current Game-Data.
 
         for player in self.players:

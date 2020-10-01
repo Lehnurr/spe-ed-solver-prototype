@@ -9,6 +9,7 @@ class PlayerAction(Enum):
     SPEED_UP = 4,
     CHANGE_NOTHING = 5
 
+
 class PlayerDirection(Enum):
     UP = 1,
     RIGHT = 2,
