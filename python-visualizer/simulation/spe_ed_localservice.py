@@ -1,21 +1,6 @@
 from colorclass import Color
 from aenum import Enum
 
-PlayerAction = Enum('PlayerAction', 'turn_left turn_right slow_down speed_up change_nothing')
-PlayerDirection = Enum('PlayerAction', 'left right up down')
-
-
-class Player(object):
-
-    def __init__(self, player_id: int, color: Color, x_position: int, y_position: int):
-        self.player_id = player_id
-        self.color = color
-        self.x_position = x_position
-        self.y_position = y_position
-        self.speed = 1
-        self.next_action = None
-        self.direction = PlayerDirection.up
-
 
 class LocalGameService:
     players = []
@@ -41,12 +26,21 @@ class LocalGameService:
             self.players[player].speed = 0
 
     def next_round(self) -> str:
-        # If speed = 0 or next_action = None -> Player is dead
+        
 
-        # do actions in seperated environment -> Check Player status (Speed, position on board, crashes, ...)
-        # Detect new dead players and transfer new Data in the cell-List
+        for player in self.players:
+            if(player.speed == 0 or player.next_action == None)
+                # Player is dead
+                continue
+            # donext action and transfer state in cell-list / player-objects
+# draw full action if not speed > 10 or < 1
+            
+
+                
+
+        # kill player that crashed because of the next action
+
         # generate a JSON String with the current Game-Data.
-        # Implement after Issue https://github.com/informatiCup/InformatiCup2021/issues/5 is solved...
 
         for player in self.players:
             player.next_action = None
