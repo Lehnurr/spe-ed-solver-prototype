@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# ignore custom local python config files to keep information private (e.g. API KEY)
+config_local.py
