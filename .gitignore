@@ -130,3 +130,4 @@ dmypy.json
 
 # ignore custom local python config files to keep information private (e.g. API KEY)
 config_local.py
+.idea/
