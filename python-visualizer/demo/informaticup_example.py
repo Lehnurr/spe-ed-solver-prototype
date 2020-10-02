@@ -1,11 +1,10 @@
 import asyncio
 import json
-import os
 import random
 import websockets
 
 import config
-from visualisation import GameBoardViewer
+from visualisation import SliceViewer
 
 
 async def play():
@@ -36,12 +35,14 @@ async def play():
                 cells = state["cells"]
                 width = state["width"]
                 height = state["height"]
-                game_board_viewer = GameBoardViewer.GameBoardViewer(width, height)
-            game_board_viewer.add_game_state(cells)
+                game_board_viewer = SliceViewer.SliceViewer(width, height, ["game_state"])
+            game_board_viewer.add_data("game_state", cells)
+
+            game_board_viewer.next_step()
 
             await websocket.send(action_json)
 
-        game_board_viewer.plot_game_states()
+        game_board_viewer.show_slices()
 
 
 asyncio.get_event_loop().run_until_complete(play())

@@ -67,6 +67,7 @@ class SliceViewer:
         self.fig.canvas.flush_events()
 
     def add_data(self, attribute_name: str, data: np.array):
+        data = np.array(data)
         assert(attribute_name in self.attributeNamesList)
         max_value = np.max(data)
         min_value = np.min(data)
