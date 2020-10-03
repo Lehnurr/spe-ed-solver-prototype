@@ -97,13 +97,10 @@ class LocalGameService:
             "width": self.width,
             "height": self.height,
             "cells": self.cells,
-            "players": {},
+            "players": {player.player_id: player.to_dict() for player in self.players},
             "you": 1,
             "running": True,
             "deadline": ""
         }
-
-        for p in self.players:
-            game_data["players"][p.player_id] = p.to_json_dict()
 
         return json.dumps(game_data)

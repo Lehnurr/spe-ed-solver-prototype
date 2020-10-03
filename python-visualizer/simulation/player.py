@@ -37,7 +37,7 @@ class Player(object):
         self.next_action = None
         self.direction = PlayerDirection.LEFT
 
-    def to_json_dict(self):
+    def to_dict(self):
         return {
             "x": self.position[0],
             "y": self.position[1],
