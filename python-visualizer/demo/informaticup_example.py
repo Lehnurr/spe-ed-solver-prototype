@@ -32,10 +32,10 @@ async def play():
             action_json = json.dumps({"action": action})
 
             if not game_board_viewer:
-                cells = state["cells"]
                 width = state["width"]
                 height = state["height"]
                 game_board_viewer = SliceViewer.SliceViewer(width, height, ["game_state"])
+            cells = state["cells"]
             game_board_viewer.add_data("game_state", cells)
 
             game_board_viewer.next_step()
