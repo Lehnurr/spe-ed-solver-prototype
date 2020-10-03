@@ -66,16 +66,19 @@ class SliceViewer:
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
 
-    def add_data(self, attribute_name: str, data: np.array):
-        data = np.array(data)
+    def add_data(self, attribute_name: str, data, normalize=True):
         assert(attribute_name in self.attributeNamesList)
-        max_value = np.max(data)
-        min_value = np.min(data)
-        difference = max_value - min_value
-        if difference != 0:
-            self.currentDataMapping[attribute_name] = (data + math.fabs(min_value)) / math.fabs(difference)
+        data = np.array(data)
+        if normalize:
+            max_value = np.max(data)
+            min_value = np.min(data)
+            difference = max_value - min_value
+            if difference != 0:
+                self.currentDataMapping[attribute_name] = (data + math.fabs(min_value)) / math.fabs(difference)
+            else:
+                self.currentDataMapping[attribute_name] = np.ones((self.plot_height, self.plot_width))
         else:
-            self.currentDataMapping[attribute_name] = np.ones((self.plot_height, self.plot_width))
+            self.currentDataMapping[attribute_name] = data
 
     def next_step(self):
         self.dataMappings.append(self.currentDataMapping)
