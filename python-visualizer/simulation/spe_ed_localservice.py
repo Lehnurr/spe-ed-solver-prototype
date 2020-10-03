@@ -10,13 +10,13 @@ class LocalGameService:
 
         self.width = width
         self.height = height
-        self.cells = [0]*cell_count
+        self.cells = [[0 for x in range(height)] for y in range(width)]
         self.round = 1
 
         for player_id in range(0, player_count):
             start_cell = start_point_distance * (player_id + 1)
             player = Player(player_id, start_cell % width, start_cell // width)
-            self.cells[start_cell] = player.player_id
+            self.cells[start_cell % width][start_cell // width] = player.player_id
             self.players.append(player)
 
     def do_action(self, player: int, player_action):
@@ -48,42 +48,44 @@ class LocalGameService:
 
             jump = self.round % 6 == 0 and player.speed >= 3
 
-            new_position_x = player.x_position
-            new_position_y = player.y_position
-            new_position_indices = []
+            new_position = player.position
+            new_path = []
 
             if player.direction == Player.PlayerDirection.UP:
-                new_position_y = self.calculate_move(player.y_position, True, player.speed)
-                for pos in range(player.y_position + 1, new_position_y):
-                    new_position_indices.append(self.get_cell_index(player.x_position, pos))
+                new_position[1] = player.position[1] + player.speed
+                for pos in range(player.position[1] + 1, new_position[1]):
+                    new_path.append((player.position[0], pos))
             elif player.direction == Player.PlayerDirection.RIGHT:
-                new_position_x = self.calculate_move(player.x_position, True, player.speed)
-                for pos in range(player.x_position + 1, new_position_x + 1):
-                    new_position_indices.append(self.get_cell_index(pos, player.y_position))
+                new_position[0] = player.position[0] + player.speed
+                for pos in range(player.position[0] + 1, new_position[0] + 1):
+                    new_path.append(self.get_cell_index(pos, player.position[1]))
             elif player.direction == Player.PlayerDirection.DOWN:
-                new_position_y = self.calculate_move(player.y_position, False, player.speed)
-                for pos in range(new_position_y, player.y_position + 1):
-                    new_position_indices.append(self.get_cell_index(player.x_position, pos))
+                new_position[1] = player.position[1] - player.speed
+                for pos in range(new_position[1], player.position[1] + 1):
+                    new_path.append((player.position[0], pos))
             elif player.direction == Player.PlayerDirection.LEFT:
-                new_position_x = self.calculate_move(player.x_position, False, player.speed)
-                for pos in range(new_position_x + 1, player.x_position + 1):
-                    new_position_indices.append(self.get_cell_index(pos, player.y_position))
+                new_position[0] = player.position[0] - player.speed
+                for pos in range(new_position[0] + 1, player.position[0] + 1):
+                    new_path.append((pos, player.position[1]))
 
-            while jump and len(new_position_indices) > 2:
-                new_position_indices.pop(1)
+            while jump and len(new_path) > 2:
+                new_path.pop(1)
 
-            next_step_cells.append(new_position_indices)
+            next_step_cells.append(new_path)
             player.next_action = None
-            player.x_position = new_position_x
-            player.y_position = new_position_y
+            player.position = new_position
 
-            for pos in new_position_indices:
-                if self.cells[pos] == 0:
-                    self.cells[pos] = player.player_id
+            for pos in new_path:
+                if pos[0] < 0 or pos[0] >= self.width or pos[1] < 0 or pos[1] >= self.height:
+                    # Out of Game field
+                    player.speed = 0
+                    break
+                elif self.cells[pos[0]][pos[1]] == 0:
+                    self.cells[pos[0]][pos[1]] = player.player_id
                 else:
                     # Crash -> Dead
                     player.speed = 0
-                    self.cells[pos] = -1
+                    self.cells[pos[0]][pos[1]] = -1
                     # if already other processed players passed this cell in this round -> Kill them
                     for player_id in range(0, player.player_id + 1):
                         if pos in next_step_cells[player_id]:
@@ -93,9 +95,3 @@ class LocalGameService:
 
         # TODO: generate a JSON String with the current Game-Data.
         return "json"
-
-    def get_cell_index(self, x_position: int, y_position: int) -> int:
-        return y_position * self.width + x_position
-
-    def calculate_move(self, position: int, move_forward: bool, speed: int) -> int:
-        pass
