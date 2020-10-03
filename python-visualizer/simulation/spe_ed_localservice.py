@@ -1,3 +1,5 @@
+import json
+
 from simulation.player import Player, PlayerDirection, PlayerAction
 
 
@@ -90,6 +92,15 @@ class LocalGameService:
                             self.players[player_id - 1].speed = 0
 
         self.round += 1
-
-        # TODO: generate a JSON String with the current Game-Data.
-        return "json"
+        
+        return json.dumps(
+            {
+                "width": self.width,
+                "height": self.height,
+                "cells": self.cells,
+                "players": list(map(Player.to_json, self.players)),
+                "you": 1,
+                "running": True,
+                "deadline": ""
+            }
+        )

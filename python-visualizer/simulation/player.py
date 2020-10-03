@@ -1,3 +1,4 @@
+import json
 from enum import Enum
 
 
@@ -35,3 +36,18 @@ class Player(object):
         self.speed = 1
         self.next_action = None
         self.direction = PlayerDirection.LEFT
+
+    def to_json(self):
+        return json.dumps(
+            {
+                self.player_id:
+                    {
+                        "x": self.position[0],
+                        "y": self.position[1],
+                        "direction": self.direction.name.lower(),
+                        "speed": self.speed,
+                        "active": self.speed > 0,
+                        "name": f'Player #{self.player_id}'
+                    }
+            }
+        )
