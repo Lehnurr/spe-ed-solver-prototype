@@ -1,21 +1,21 @@
-from simulation import Player
+from simulation.player import Player
 
 
 class LocalGameService:
     players = []
 
-    def __init__(self, width: int, height: int, player_colors):
+    def __init__(self, width: int, height: int, player_count: int):
         cell_count = width * height
-        start_point_distance = cell_count // (len(player_colors) + 1)
+        start_point_distance = cell_count // (player_count + 1)
 
         self.width = width
         self.height = height
         self.cells = [0]*cell_count
         self.round = 1
 
-        for index, color in enumerate(player_colors):
-            start_cell = start_point_distance * (index + 1)
-            player = Player(index, color, start_cell % width, start_cell // width)
+        for player_id in range(0, player_count):
+            start_cell = start_point_distance * (player_id + 1)
+            player = Player(player_id, start_cell % width, start_cell // width)
             self.cells[start_cell] = player.player_id
             self.players.append(player)
 
@@ -69,9 +69,8 @@ class LocalGameService:
                 for pos in range(new_position_x + 1, player.x_position + 1):
                     new_position_indices.append(self.get_cell_index(pos, player.y_position))
 
-            if jump:
-                while len(new_position_indices) > 2:
-                    new_position_indices.pop(1)
+            while jump and len(new_position_indices) > 2:
+                new_position_indices.pop(1)
 
             next_step_cells.append(new_position_indices)
             player.next_action = None

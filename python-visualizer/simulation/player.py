@@ -1,4 +1,3 @@
-from colorclass import Color
 from enum import Enum
 
 
@@ -18,9 +17,8 @@ class PlayerDirection(Enum):
 
 
 class Player(object):
-    def __init__(self, player_id: int, color: Color, x_position: int, y_position: int):
+    def __init__(self, player_id: int, x_position: int, y_position: int):
         self.player_id = player_id
-        self.color = color
         self.x_position = x_position
         self.y_position = y_position
         self.speed = 1
