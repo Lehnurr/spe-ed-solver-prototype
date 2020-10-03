@@ -92,15 +92,18 @@ class LocalGameService:
                             self.players[player_id - 1].speed = 0
 
         self.round += 1
-        
-        return json.dumps(
-            {
-                "width": self.width,
-                "height": self.height,
-                "cells": self.cells,
-                "players": list(map(Player.to_json, self.players)),
-                "you": 1,
-                "running": True,
-                "deadline": ""
-            }
-        )
+
+        game_data = {
+            "width": self.width,
+            "height": self.height,
+            "cells": self.cells,
+            "players": {},
+            "you": 1,
+            "running": True,
+            "deadline": ""
+        }
+
+        for p in self.players:
+            game_data["players"][p.player_id] = p.to_json_dict()
+
+        return json.dumps(game_data)
