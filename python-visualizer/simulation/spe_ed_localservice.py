@@ -61,7 +61,7 @@ class LocalGameService:
         next_step_cells = []
 
         for player in self.players:
-            # apply next_action
+            # Apply next_action
             if (player.speed == 0 or
                     player.next_action is None or
                     (player.next_action == PlayerAction.SLOW_DOWN and player.speed == 1) or
@@ -82,6 +82,7 @@ class LocalGameService:
             new_position = player.position.copy()
             new_path = []
 
+            # Move and calculate the passed Cells
             if player.direction == PlayerDirection.UP:
                 new_position[1] = player.position[1] - player.speed
                 for pos in range(new_position[1], player.position[1]):
@@ -99,6 +100,7 @@ class LocalGameService:
                 for pos in range(new_position[0], player.position[0]):
                     new_path.append((pos, player.position[1]))
 
+            # Remove the jumped over cells
             while jump and len(new_path) > 2:
                 new_path.pop(1)
 
@@ -106,6 +108,7 @@ class LocalGameService:
             player.next_action = None
             player.position = new_position
 
+            # Apply new paths and check for new deaths
             for pos in new_path:
                 if pos[0] < 0 or pos[0] >= self.width or pos[1] < 0 or pos[1] >= self.height:
                     # Out of Game field
