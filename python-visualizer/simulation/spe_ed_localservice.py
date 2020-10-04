@@ -1,6 +1,12 @@
+import _thread
 import json
+import time
+from datetime import datetime, timedelta
 
+from Event import Event
 from simulation.player import Player, PlayerDirection, PlayerAction
+
+DEADLINE_SECONDS = 10
 
 
 class LocalGameService:
@@ -21,14 +27,35 @@ class LocalGameService:
             self.cells[player.position[1]][player.position[0]] = player.player_id
             self.players.append(player)
 
+        self.listeners = []
+        self.is_started = False
+        self.deadline = None
+        self.on_round_start = Event()
+
+    def start(self):
+        self.is_started = True
+        self.__reset_deadline()
+        self.__notify_player()
+        _thread.start_new_thread(wait_and_end_round, (self,))
+
     def do_action(self, player: int, player_action):
-        if self.players[player - 1].next_action is None:
+        if not self.is_started:
+            raise Exception('Game is not started')
+        elif self.players[player - 1].next_action is None:
             self.players[player - 1].next_action = player_action
         else:
             self.players[player - 1].speed = 0
 
-    def next_round(self) -> str:
+        if self.is_running() and all(p.speed == 0 or p.next_action is not None for p in self.players):
+            self.next_round()
+
+    def next_round(self):
+        if not self.is_started:
+            return
+
+        self.__reset_deadline()
         next_step_cells = []
+
         for player in self.players:
             # apply next_action
             if (player.speed == 0 or
@@ -92,15 +119,29 @@ class LocalGameService:
                             self.players[player_id - 1].speed = 0
 
         self.round += 1
+        self.__notify_player()
 
-        game_data = {
+    def __notify_player(self):
+        self.on_round_start.notify(json.dumps({
             "width": self.width,
             "height": self.height,
             "cells": self.cells,
             "players": {player.player_id: player.to_dict() for player in self.players},
             "you": 1,
-            "running": True,
-            "deadline": ""
-        }
+            "running": self.is_running(),
+            "deadline": self.deadline.replace(microsecond=0).isoformat("T") + "Z"
+        }))
 
-        return json.dumps(game_data)
+    def __reset_deadline(self):
+        remaining_seconds = DEADLINE_SECONDS
+        self.deadline = datetime.utcnow() + timedelta(seconds=remaining_seconds)
+
+    def is_running(self) -> bool:
+        return self.is_started and sum(p.speed > 0 for p in self.players) > 1
+
+
+def wait_and_end_round(game: LocalGameService):
+    while game.is_running():
+        time.sleep(1)
+        if game.deadline < datetime.utcnow():
+            game.next_round()
