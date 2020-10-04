@@ -1,6 +1,4 @@
-import _thread
 import json
-import sys
 import threading
 import time
 from datetime import datetime, timedelta
@@ -12,8 +10,6 @@ DEADLINE_SECONDS = 10
 
 
 class LocalGameService:
-    players = []
-
     def __init__(self, width: int, height: int, player_count: int):
         cell_count = width * height
         start_point_distance = cell_count // (player_count + 1)
@@ -22,7 +18,9 @@ class LocalGameService:
         self.height = height
         self.cells = [[0 for x in range(width)] for y in range(height)]
         self.round = 1
+        self.players = []
 
+        # Init Player
         for player_id in range(1, player_count + 1):
             start_cell = start_point_distance * player_id
             player = Player(player_id, start_cell % width, start_cell // width)
@@ -34,12 +32,14 @@ class LocalGameService:
         self.deadline = None
         self.on_round_start = Event()
 
+    # Starts the Game and sends first Notification to the Player
     def start(self):
         self.is_started = True
         self.__reset_deadline()
-        threading.Thread(target=wait_and_end_round, args=(self,)).start()
+        threading.Thread(target=self.__wait_and_end_round, args=()).start()
         self.__notify_player()
 
+    # processes an User interaction
     def do_action(self, player: int, player_action):
         if not self.is_started:
             raise Exception('Game is not started')
@@ -48,10 +48,12 @@ class LocalGameService:
         else:
             self.players[player - 1].speed = 0
 
-        if self.is_running() and all(p.speed == 0 or p.next_action is not None for p in self.players):
-            self.next_round()
+        if self.__is_running() and all(p.speed == 0 or p.next_action is not None for p in self.players):
+            self.__next_round()
 
-    def next_round(self):
+    # Performs player actions, evaluates the score, ends the round, starts a new round and notifies the players
+    # is called automatically by the LocalGameService
+    def __next_round(self):
         if not self.is_started:
             return
 
@@ -130,7 +132,7 @@ class LocalGameService:
             "cells": self.cells,
             "players": {player.player_id: player.to_dict() for player in self.players},
             "you": 1,
-            "running": self.is_running(),
+            "running": self.__is_running(),
             "deadline": self.deadline.replace(microsecond=0).isoformat("T") + "Z"
         }))
 
@@ -138,12 +140,12 @@ class LocalGameService:
         remaining_seconds = DEADLINE_SECONDS
         self.deadline = datetime.utcnow() + timedelta(seconds=remaining_seconds)
 
-    def is_running(self) -> bool:
+    def __is_running(self) -> bool:
         return self.is_started and sum(p.speed > 0 for p in self.players) > 1
 
-
-def wait_and_end_round(game):
-    while game.is_running():
-        time.sleep(1)
-        if game.deadline < datetime.utcnow():
-            game.next_round()
+    # is running in extra thread: checks the deadline
+    def __wait_and_end_round(self):
+        while self.__is_running():
+            time.sleep(1)
+            if self.deadline < datetime.utcnow():
+                self.__next_round()
