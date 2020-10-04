@@ -1,3 +1,6 @@
+import threading
+
+
 class Event:
     def __init__(self):
         self.listeners = []
@@ -6,6 +9,6 @@ class Event:
         self.listeners.append(listener)
         return self
 
-    def notify(self, *args, **kwargs):
+    def notify(self, *args):
         for listener in self.listeners:
-            listener(*args, **kwargs)
+            threading.Thread(target=listener, args=args).start()

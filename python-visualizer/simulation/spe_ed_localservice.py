@@ -1,5 +1,7 @@
 import _thread
 import json
+import sys
+import threading
 import time
 from datetime import datetime, timedelta
 
@@ -35,8 +37,8 @@ class LocalGameService:
     def start(self):
         self.is_started = True
         self.__reset_deadline()
+        threading.Thread(target=wait_and_end_round, args=(self,)).start()
         self.__notify_player()
-        _thread.start_new_thread(wait_and_end_round, (self,))
 
     def do_action(self, player: int, player_action):
         if not self.is_started:
@@ -140,7 +142,7 @@ class LocalGameService:
         return self.is_started and sum(p.speed > 0 for p in self.players) > 1
 
 
-def wait_and_end_round(game: LocalGameService):
+def wait_and_end_round(game):
     while game.is_running():
         time.sleep(1)
         if game.deadline < datetime.utcnow():

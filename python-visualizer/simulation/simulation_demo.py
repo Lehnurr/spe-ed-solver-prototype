@@ -1,3 +1,5 @@
+import time
+
 from simulation.player import PlayerAction
 from simulation.spe_ed_localservice import LocalGameService
 
@@ -7,10 +9,12 @@ def log_round_data(json_data: str):
 
 
 def player_one_do_action(json_data: str):
+    time.sleep(2)
     game.do_action(1, PlayerAction.CHANGE_NOTHING)
 
 
 def player_two_do_action(json_data: str):
+    time.sleep(2)
     game.do_action(2, PlayerAction.TURN_RIGHT)
 
 
