@@ -20,6 +20,15 @@ async def play():
             state = json.loads(state_json)
             print("<", state)
             own_player = state["players"][str(state["you"])]
+
+            if not game_board_viewer:
+                width = state["width"]
+                height = state["height"]
+                game_board_viewer = SliceViewer.SliceViewer(width, height, ["game_state"])
+            cells = state["cells"]
+            game_board_viewer.add_data("game_state", cells)
+            game_board_viewer.next_step()
+
             if not state["running"] or not own_player["active"]:
                 break
             valid_actions = ["turn_left", "turn_right", "change_nothing"]
@@ -30,15 +39,6 @@ async def play():
             action = random.choice(valid_actions)
             print(">", action)
             action_json = json.dumps({"action": action})
-
-            if not game_board_viewer:
-                width = state["width"]
-                height = state["height"]
-                game_board_viewer = SliceViewer.SliceViewer(width, height, ["game_state"])
-            cells = state["cells"]
-            game_board_viewer.add_data("game_state", cells)
-
-            game_board_viewer.next_step()
 
             await websocket.send(action_json)
 
