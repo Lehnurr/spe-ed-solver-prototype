@@ -36,7 +36,8 @@ class LocalGameService:
     def start(self):
         self.is_started = True
         self.__reset_deadline()
-        threading.Thread(target=self.__wait_and_end_round, args=()).start()
+        if self.deadline > 0:
+            threading.Thread(target=self.__wait_and_end_round, args=()).start()
         self.__notify_player()
 
     # processes an User interaction
@@ -61,52 +62,15 @@ class LocalGameService:
         next_step_cells = []
 
         for player in self.players:
-            # Apply next_action
-            if (player.speed == 0 or
-                    player.next_action is None or
-                    (player.next_action == PlayerAction.SLOW_DOWN and player.speed == 1) or
-                    (player.next_action == PlayerAction.SPEED_UP and player.speed == 10)):
-                player.speed = 0
-                player.next_action = None
-                next_step_cells.append([])
-                continue
-            elif player.next_action == PlayerAction.TURN_LEFT or player.next_action == PlayerAction.TURN_RIGHT:
-                player.direction = player.direction.turn(player.next_action)
-            elif player.next_action == PlayerAction.SLOW_DOWN:
-                player.speed -= 1
-            elif player.next_action == PlayerAction.SPEED_UP:
-                player.speed += 1
-
-            jump = self.round % 6 == 0 and player.speed >= 3
-
-            new_position = player.position.copy()
-            new_path = []
-
-            # Move and calculate the passed Cells
-            if player.direction == PlayerDirection.UP:
-                new_position[1] = player.position[1] - player.speed
-                for pos in range(new_position[1], player.position[1]):
-                    new_path.append((player.position[0], pos))
-            elif player.direction == PlayerDirection.RIGHT:
-                new_position[0] = player.position[0] + player.speed
-                for pos in range(player.position[0] + 1, new_position[0] + 1):
-                    new_path.append((pos, player.position[1]))
-            elif player.direction == PlayerDirection.DOWN:
-                new_position[1] = player.position[1] + player.speed
-                for pos in range(player.position[1] + 1, new_position[1] + 1):
-                    new_path.append((player.position[0], pos))
-            elif player.direction == PlayerDirection.LEFT:
-                new_position[0] = player.position[0] - player.speed
-                for pos in range(new_position[0], player.position[0]):
-                    new_path.append((pos, player.position[1]))
+            # Do next action
+            new_path = player.do_action()
 
             # Remove the jumped over cells
+            jump = self.round % 6 == 0 and player.speed >= 3
             while jump and len(new_path) > 2:
                 new_path.pop(1)
-
+                
             next_step_cells.append(new_path)
-            player.next_action = None
-            player.position = new_position
 
             # Apply new paths and check for new deaths
             for pos in new_path:
