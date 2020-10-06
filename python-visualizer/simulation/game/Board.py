@@ -22,6 +22,9 @@ class Board:
     def point_is_on_board(self, x: int, y: int):
         return 0 <= x <= self.width and 0 <= y <= self.height
 
+    def point_is_available(self, x: int, y: int):
+        self.point_is_available(x, y) and self.cells[y][x] == 0
+
     def copy(self):
         copy = Board(self.width, self.height)
         copy.cells = deepcopy(self.cells)
