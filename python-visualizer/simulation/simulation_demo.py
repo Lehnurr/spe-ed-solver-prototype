@@ -1,7 +1,7 @@
 import time
 
-from simulation.player.player_action import PlayerAction
-from simulation.spe_ed_localservice import LocalGameService
+from simulation.player.PlayerAction import PlayerAction
+from simulation.LocalGameService import LocalGameService
 
 
 def log_round_data(json_data: str):
