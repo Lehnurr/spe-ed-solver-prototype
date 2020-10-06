@@ -7,7 +7,7 @@ from game_connection.SimulationConnector import SimulationConnector
 def start():
     if config.SIMULATED:
         player_controllers = PlayerControllerFactory.get_player_controllers(config.SELECTED_PLAYER_TYPES,
-                                                                            config.PLAYER_COUNT)
+                                                                            config.SIMULATION_PLAYER_COUNT)
         connector = SimulationConnector(config.SIMULATION_BOARD_WIDTH,
                                         config.SIMULATION_BOARD_HEIGHT,
                                         player_controllers)

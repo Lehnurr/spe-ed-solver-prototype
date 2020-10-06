@@ -1,5 +1,7 @@
 import threading
 
+from config import NOTIFY_SIMULATED_PLAYER_ASYNC
+
 
 class Event:
     def __init__(self):
@@ -11,4 +13,7 @@ class Event:
 
     def notify(self, *args):
         for listener in self.listeners:
-            threading.Thread(target=listener, args=args).start()
+            if NOTIFY_SIMULATED_PLAYER_ASYNC:
+                threading.Thread(target=listener, args=args).start()
+            else:
+                listener(*args)
