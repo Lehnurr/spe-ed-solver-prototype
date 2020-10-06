@@ -1,4 +1,5 @@
 from players.BasePlayer import BasePlayer
+from simulation.player.PlayerAction import PlayerAction
 import random
 
 
@@ -11,11 +12,11 @@ class RandomPlayer(BasePlayer):
         print("<", step_info)
         own_player = step_info["players"][str(step_info["you"])]
 
-        valid_actions = ["turn_left", "turn_right", "change_nothing"]
+        valid_actions = [PlayerAction.TURN_LEFT, PlayerAction.TURN_RIGHT, PlayerAction.CHANGE_NOTHING]
         if own_player["speed"] < 10:
-            valid_actions += ["speed_up"]
+            valid_actions += [PlayerAction.SPEED_UP]
         if own_player["speed"] > 1:
-            valid_actions += ["slow_down"]
+            valid_actions += [PlayerAction.SLOW_DOWN]
         action = random.choice(valid_actions)
         return action
 

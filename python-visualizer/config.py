@@ -15,10 +15,10 @@ API_KEY = 000000
 SELECTED_PLAYER_TYPES = ["RandomPlayer", "RandomPlayer", "RandomPlayer", "RandomPlayer", "RandomPlayer", "RandomPlayer"]
 
 # Defines if the game is played online or simulated locally.
-SIMULATED = True
+SIMULATED = False
 
 # Simulation parameters.
-SIMULATION_PLAYER_COUNT = 6
+SIMULATION_PLAYER_COUNT = 4
 SIMULATION_BOARD_WIDTH = 64
 SIMULATION_BOARD_HEIGHT = 64
 

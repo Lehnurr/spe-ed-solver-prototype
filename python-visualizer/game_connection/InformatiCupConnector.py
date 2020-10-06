@@ -21,8 +21,8 @@ class InformatiCupConnector(BaseConnector):
                 if not step_info["running"] or not own_player["active"]:
                     break
                 action = self.playerController.handle_step(step_info)
-                print(action)
-                action_json = json.dumps({"action": action})
+                print(f"\t>{action.name.lower()}")
+                action_json = json.dumps({"action": action.name.lower()})
                 await websocket.send(action_json)
         self.playerController.persist_logging()
 
