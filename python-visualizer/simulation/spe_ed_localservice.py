@@ -4,30 +4,29 @@ import time
 from datetime import datetime, timedelta
 
 from Event import Event
-from simulation.player import Player, PlayerDirection, PlayerAction
+from config import SIMULATION_DEADLINE
 
-DEADLINE_SECONDS = 10
+from simulation.game.board import Board
+from simulation.player.PlayerState import PlayerState, PlayerDirection
+from simulation.player.player import Player
 
 
 class LocalGameService:
     def __init__(self, width: int, height: int, player_count: int):
-        cell_count = width * height
-        start_point_distance = cell_count // (player_count + 1)
 
-        self.width = width
-        self.height = height
-        self.cells = [[0 for x in range(width)] for y in range(height)]
-        self.round = 1
+        self.board = Board(width, height)
+
+        start_point_distance = self.board.cell_count // (player_count + 1)
         self.players = []
 
         # Init Player
         for player_id in range(1, player_count + 1):
             start_cell = start_point_distance * player_id
-            player = Player(player_id, start_cell % width, start_cell // width)
-            self.cells[player.position[1]][player.position[0]] = player.player_id
+            player = Player(player_id,
+                            PlayerState(PlayerDirection.LEFT, 1, start_cell % width, start_cell // self.board.width))
+            self.board.set_cell(player.current_state.position_x, player.current_state.position_y, player.player_id)
             self.players.append(player)
 
-        self.listeners = []
         self.is_started = False
         self.deadline = None
         self.on_round_start = Event()
@@ -36,7 +35,7 @@ class LocalGameService:
     def start(self):
         self.is_started = True
         self.__reset_deadline()
-        if self.deadline > 0:
+        if SIMULATION_DEADLINE > 0:
             threading.Thread(target=self.__wait_and_end_round, args=()).start()
         self.__notify_player()
 
@@ -47,9 +46,9 @@ class LocalGameService:
         elif self.players[player - 1].next_action is None:
             self.players[player - 1].next_action = player_action
         else:
-            self.players[player - 1].speed = 0
+            self.players[player - 1].is_active = False
 
-        if self.__is_running() and all(p.speed == 0 or p.next_action is not None for p in self.players):
+        if self.__is_running() and all(not p.is_active or p.next_action is not None for p in self.players):
             self.__next_round()
 
     # Performs player actions, evaluates the score, ends the round, starts a new round and notifies the players
@@ -59,44 +58,27 @@ class LocalGameService:
             return
 
         self.__reset_deadline()
-        next_step_cells = []
 
         for player in self.players:
-            # Do next action
-            new_path = player.do_action()
+            if player.is_active:
+                player.do_action_and_move()
+                for point in player.current_state.steps_to_this_point:
+                    self.board.set_cell(point[0], point[1], player.player_id)
+                player.is_active &= player.current_state.state_is_valid(self.board)
 
-            # Remove the jumped over cells
-            jump = self.round % 6 == 0 and player.speed >= 3
-            while jump and len(new_path) > 2:
-                new_path.pop(1)
-                
-            next_step_cells.append(new_path)
+        for player in self.players:
+            if player.is_active:
+                for point in player.current_state.steps_to_this_point:
+                    if self.board[point[1]][point[0]] == -1:
+                        player.is_active = False
 
-            # Apply new paths and check for new deaths
-            for pos in new_path:
-                if pos[0] < 0 or pos[0] >= self.width or pos[1] < 0 or pos[1] >= self.height:
-                    # Out of Game field
-                    player.speed = 0
-                    break
-                elif self.cells[pos[1]][pos[0]] == 0:
-                    self.cells[pos[1]][pos[0]] = player.player_id
-                else:
-                    # Crash -> Dead
-                    player.speed = 0
-                    self.cells[pos[1]][pos[0]] = -1
-                    # if already other processed players passed this cell in this round -> Kill them
-                    for player_id in range(1, player.player_id):
-                        if pos in next_step_cells[player_id - 1]:
-                            self.players[player_id - 1].speed = 0
-
-        self.round += 1
         self.__notify_player()
 
     def __notify_player(self):
         self.on_round_start.notify(json.dumps({
-            "width": self.width,
-            "height": self.height,
-            "cells": self.cells,
+            "width": self.board.width,
+            "height": self.board.height,
+            "cells": self.board.cells,
             "players": {player.player_id: player.to_dict() for player in self.players},
             "you": 1,
             "running": self.__is_running(),
@@ -104,11 +86,11 @@ class LocalGameService:
         }))
 
     def __reset_deadline(self):
-        remaining_seconds = DEADLINE_SECONDS
+        remaining_seconds = SIMULATION_DEADLINE
         self.deadline = datetime.utcnow() + timedelta(seconds=remaining_seconds)
 
     def __is_running(self) -> bool:
-        return self.is_started and sum(p.speed > 0 for p in self.players) > 1
+        return self.is_started and sum(p.is_active for p in self.players) > 1
 
     # is running in extra thread: checks the deadline
     def __wait_and_end_round(self):
