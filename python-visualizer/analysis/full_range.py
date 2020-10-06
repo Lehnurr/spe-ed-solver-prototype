@@ -14,9 +14,9 @@ def calculate_ranges_for_player(board: Board, initial_state: PlayerState):
 
     next_states = [initial_state]
     while len(next_states) > 0:
-        next_states = do_actions(next_states)
-        good_next_states = []
-        for state in next_states:
+        possible_next_states = do_actions(next_states)
+        next_states = []
+        for state in possible_next_states:
             if not verify_state(board, state):
                 continue  # remove state, (collision)
 
@@ -24,19 +24,16 @@ def calculate_ranges_for_player(board: Board, initial_state: PlayerState):
                 continue  # remove state, (there's a better solution)
 
             result_data[state.position_y][state.position_x][state.direction] = state
-            good_next_states.append(state)
-
-        next_states = good_next_states
+            next_states.append(state)
 
 
 def verify_state(board: Board, state: PlayerState) -> bool:
     # check for collisions with other players
     # check if new pos is on board
+    # check for collisions with myself
     for step in state.steps_to_this_point:
-        if not board.point_is_available(step[0], step[1]):
+        if not board.point_is_available(step[0], step[1]) or state.all_steps.get(step, False):
             return False
-
-    # TODO: check for collisions with myself
 
     return True
 
@@ -46,8 +43,7 @@ def do_actions(state_list):
         for action in PlayerAction:
             copy = state.copy()
             copy.do_action(action)
-            copy.do_move()
-            yield copy
+            yield copy.do_move()
 
 
 calculate_ranges_for_player(Board(10, 10), PlayerState(PlayerDirection.LEFT, 1, 0, 0, 1))

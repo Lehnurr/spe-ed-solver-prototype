@@ -32,6 +32,7 @@ class PlayerState:
         self.game_round = game_round
 
         self.previous: [PlayerState] = []
+        self.all_steps = {}
         self.action = None
         self.steps_to_this_point = []
 
@@ -83,6 +84,9 @@ class PlayerState:
         # Add self to previous of child
         child.previous.append(self)
 
+        for step in child.steps_to_this_point:
+            child.all_steps[step] = child
+
         # Increase round number
         child.game_round += 1
 
@@ -98,5 +102,6 @@ class PlayerState:
         copy = PlayerState(self.direction, self.speed, self.position_x, self.position_y, self.game_round)
         copy.previous = self.previous.copy()
         copy.action = self.action
+        copy.all_steps = self.all_steps
         copy.steps_to_this_point = self.steps_to_this_point.copy()
         return copy
