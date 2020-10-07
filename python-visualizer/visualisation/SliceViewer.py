@@ -84,8 +84,11 @@ class SliceViewer:
         self.dataMappings.append(self.currentDataMapping)
         self.currentDataMapping = {}
 
-    def show_slices(self):
+    def persist_viewer_data(self):
         assert(len(self.dataMappings) > 0)
         self.update()
         self.fig.canvas.mpl_connect('scroll_event', self.on_scroll)
-        plt.show()
+
+
+def show_all_viewers():
+    plt.show()

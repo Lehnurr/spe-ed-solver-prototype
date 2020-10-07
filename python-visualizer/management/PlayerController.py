@@ -34,12 +34,4 @@ class PlayerController:
         return action
 
     def persist_logging(self):
-        self.sliceViewer.show_slices()
-
-
-
-
-
-
-
-
+        self.sliceViewer.persist_viewer_data()
