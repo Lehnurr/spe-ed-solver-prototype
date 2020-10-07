@@ -10,11 +10,11 @@ def calculate_ranges_for_player(board: Board, initial_state: PlayerState):
                                PlayerDirection.DOWN: None,
                                PlayerDirection.LEFT: None,
                                }, }
-    result_data = [[transformer.get(cell, -1) for cell in row] for row in board]
+    result_data = [[transformer.get(cell, -1).copy() for cell in row] for row in board]
 
     next_states = [initial_state]
     while len(next_states) > 0:
-        possible_next_states = do_actions(next_states)
+        possible_next_states = list(do_actions(next_states))
         next_states = []
         for state in possible_next_states:
             if not verify_state(board, state):
@@ -24,15 +24,20 @@ def calculate_ranges_for_player(board: Board, initial_state: PlayerState):
                 continue  # remove state, (there's a better solution)
 
             result_data[state.position_y][state.position_x][state.direction] = state
+            print(state)
             next_states.append(state)
 
 
 def verify_state(board: Board, state: PlayerState) -> bool:
-    # check for collisions with other players
+    # check for speed conditions
     # check if new pos is on board
+    if not state.state_is_valid(board):
+        return False
+
+    # check for collisions with other players
     # check for collisions with myself
     for step in state.steps_to_this_point:
-        if not board.point_is_available(step[0], step[1]) or state.all_steps.get(step, False):
+        if not board.point_is_available(step[0], step[1]) or state.collided_with_own_line:
             return False
 
     return True
@@ -46,4 +51,4 @@ def do_actions(state_list):
             yield copy.do_move()
 
 
-calculate_ranges_for_player(Board(10, 10), PlayerState(PlayerDirection.LEFT, 1, 0, 0, 1))
+calculate_ranges_for_player(Board(10, 10), PlayerState(PlayerDirection.RIGHT, 1, 0, 0, 1))

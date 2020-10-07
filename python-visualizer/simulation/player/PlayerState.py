@@ -35,6 +35,7 @@ class PlayerState:
         self.all_steps = {}
         self.action = None
         self.steps_to_this_point = []
+        self.collided_with_own_line = False
 
     def do_action(self, action: PlayerAction):
         if self.action is not None:
@@ -84,8 +85,11 @@ class PlayerState:
         # Add self to previous of child
         child.previous.append(self)
 
+        # All new passed positions
         for step in child.steps_to_this_point:
-            child.all_steps[step] = child
+            child.collided_with_own_line |= bool(child.all_steps.get(step, False))
+            if not child.collided_with_own_line:
+                child.all_steps.setdefault(step, child)
 
         # Increase round number
         child.game_round += 1
@@ -102,6 +106,9 @@ class PlayerState:
         copy = PlayerState(self.direction, self.speed, self.position_x, self.position_y, self.game_round)
         copy.previous = self.previous.copy()
         copy.action = self.action
-        copy.all_steps = self.all_steps
+        copy.all_steps = self.all_steps.copy()
         copy.steps_to_this_point = self.steps_to_this_point.copy()
         return copy
+
+    def __str__(self):
+        return f'pos = ({self.position_x}, {self.position_y}), speed = {self.speed}, direction = {self.direction}, round = {self.game_round}'
