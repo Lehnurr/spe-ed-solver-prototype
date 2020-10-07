@@ -47,9 +47,3 @@ def do_actions(state_list):
 
 
 calculate_ranges_for_player(Board(10, 10), PlayerState(PlayerDirection.LEFT, 1, 0, 0, 1))
-
-# später auch speed + und jump
-# felder gewichten mit player speed und einene radius setzen
-# von vorrunde üpbernehmen
-# an jedem feld speiochern wpo ich hi komme
-# multithreading
