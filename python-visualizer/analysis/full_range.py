@@ -1,16 +1,13 @@
+from datetime import datetime
+
 from simulation.game.Board import Board
 from simulation.player.PlayerAction import PlayerAction
 from simulation.player.PlayerState import PlayerDirection, PlayerState
 
 
 def calculate_ranges_for_player(board: Board, initial_state: PlayerState):
-    # Transform Cells to result_data
-    transformer = {-1: -1, 0: {PlayerDirection.UP: None,
-                               PlayerDirection.RIGHT: None,
-                               PlayerDirection.DOWN: None,
-                               PlayerDirection.LEFT: None,
-                               }, }
-    result_data = [[transformer.get(cell, -1).copy() for cell in row] for row in board]
+    print(f'start: {datetime.now()}')
+    result_data = {}
 
     next_states = [initial_state]
     while len(next_states) > 0:
@@ -20,12 +17,14 @@ def calculate_ranges_for_player(board: Board, initial_state: PlayerState):
             if not verify_state(board, state):
                 continue  # remove state, (collision)
 
-            if result_data[state.position_y][state.position_x].get(state.direction) is not None:
+            if result_data.get((state.position_x, state.position_y), False):
                 continue  # remove state, (there's a better solution)
 
-            result_data[state.position_y][state.position_x][state.direction] = state
-            print(state)
+            result_data[(state.position_x, state.position_y)] = state
             next_states.append(state)
+
+    print(f'end: {datetime.now()}')
+    print(f'found {len(result_data)} elements')
 
 
 def verify_state(board: Board, state: PlayerState) -> bool:
@@ -51,4 +50,4 @@ def do_actions(state_list):
             yield copy.do_move()
 
 
-calculate_ranges_for_player(Board(10, 10), PlayerState(PlayerDirection.RIGHT, 1, 0, 0, 1))
+calculate_ranges_for_player(Board(10, 10), PlayerState(PlayerDirection.DOWN, 1, 4, 4, 1))
