@@ -8,7 +8,7 @@ class RandomPlayer(BasePlayer):
     def __init__(self):
         pass
 
-    def handle_step(self, step_info):
+    def handle_step(self, step_info, slice_viewer):
         print("<", step_info)
         own_player = step_info["players"][str(step_info["you"])]
 

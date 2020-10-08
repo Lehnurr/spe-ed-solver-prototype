@@ -1,4 +1,5 @@
 from players.RandomPlayer import RandomPlayer
+from players.RandomFullRangePlayer import RandomFullRangePlayer
 from management.PlayerController import PlayerController
 
 
@@ -10,6 +11,9 @@ def get_player_controllers(selected_player_types, player_count):
 
         if selected_player_type == "RandomPlayer":
             current_player_instance = RandomPlayer()
+
+        if selected_player_type == "RandomFullRangePlayer":
+            current_player_instance = RandomFullRangePlayer()
 
         assert(current_player_instance is not None)
         player_instances.append(current_player_instance)

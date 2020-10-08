@@ -24,7 +24,7 @@ class PlayerController:
             return None
 
         # perform player calculations and receive next action based on step info
-        action = self.playerInstance.handle_step(step_info)
+        action = self.playerInstance.handle_step(step_info, self.sliceViewer)
 
         # logging
         self.sliceViewer.add_data("game_state", step_info["cells"])

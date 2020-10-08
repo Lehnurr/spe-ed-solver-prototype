@@ -25,6 +25,7 @@ def calculate_ranges_for_player(board: Board, initial_state: PlayerState):
 
     print(f'end: {datetime.now()}')
     print(f'found {len(result_data)} elements')
+    return result_data
 
 
 def verify_state(board: Board, state: PlayerState) -> bool:
