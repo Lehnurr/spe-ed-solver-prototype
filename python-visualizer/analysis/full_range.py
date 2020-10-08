@@ -51,4 +51,5 @@ def do_actions(state_list):
             yield copy.do_move()
 
 
-calculate_ranges_for_player(Board(10, 10), PlayerState(PlayerDirection.DOWN, 1, 4, 4, 1))
+if __name__ == "__main__":
+    calculate_ranges_for_player(Board(10, 10), PlayerState(PlayerDirection.DOWN, 1, 4, 4, 1))

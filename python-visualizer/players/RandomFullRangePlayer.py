@@ -47,7 +47,7 @@ class RandomFullRangePlayer(BasePlayer):
         # add path options to viewer
         path_steps_array = np.zeros((step_info["height"], step_info["width"]))
         for key, value in full_range_result.items():
-            path_steps_array[key] = value.game_round - self.roundCounter
+            path_steps_array[key[1], key[0]] = value.game_round - self.roundCounter
         slice_viewer.add_data("full_range_steps", path_steps_array)
 
         # apply action to local model
