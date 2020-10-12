@@ -96,11 +96,22 @@ class PlayerState:
 
         return child
 
-    def speed_is_valid(self):
-        return 0 < self.speed <= 10
-
     def state_is_valid(self, board: Board) -> bool:
-        return self.speed_is_valid() and board.point_is_on_board(self.position_x, self.position_y)
+        return 0 < self.speed <= 10 and board.point_is_on_board(self.position_x, self.position_y)
+
+    def verify_state(self, board: Board) -> bool:
+        # check for speed conditions
+        # check if new pos is on board
+        if not self.state_is_valid(board):
+            return False
+
+        # check for collisions with other players
+        # check for collisions with myself
+        for step in self.steps_to_this_point:
+            if not board.point_is_available(step[0], step[1]) or self.collided_with_own_line:
+                return False
+
+        return True
 
     def copy(self):
         copy = PlayerState(self.direction, self.speed, self.position_x, self.position_y, self.game_round)

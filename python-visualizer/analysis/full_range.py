@@ -14,7 +14,7 @@ def calculate_ranges_for_player(board: Board, initial_state: PlayerState):
         possible_next_states = list(do_actions(next_states))
         next_states = []
         for state in possible_next_states:
-            if not verify_state(board, state):
+            if not state.verify_state(board):
                 continue  # remove state, (collision)
 
             if result_data.get((state.position_x, state.position_y), False):
@@ -26,21 +26,6 @@ def calculate_ranges_for_player(board: Board, initial_state: PlayerState):
     print(f'end: {datetime.now()}')
     print(f'found {len(result_data)} elements')
     return result_data
-
-
-def verify_state(board: Board, state: PlayerState) -> bool:
-    # check for speed conditions
-    # check if new pos is on board
-    if not state.state_is_valid(board):
-        return False
-
-    # check for collisions with other players
-    # check for collisions with myself
-    for step in state.steps_to_this_point:
-        if not board.point_is_available(step[0], step[1]) or state.collided_with_own_line:
-            return False
-
-    return True
 
 
 def do_actions(state_list):
