@@ -17,7 +17,7 @@ class Player(object):
 
         self.current_state.do_action(self.next_action)
 
-        if self.current_state.speed_is_valid():
+        if self.current_state.verify_speed():
             self.current_state = self.current_state.do_move()
         else:
             self.is_active = False
