@@ -26,8 +26,8 @@ class Player(object):
 
     def to_dict(self):
         return {
-            "x": self.current_state.position_y,
-            "y": self.current_state.position_x,
+            "x": self.current_state.position_x,
+            "y": self.current_state.position_y,
             "direction": self.current_state.direction.name.lower(),
             "speed": self.current_state.speed,
             "active": self.is_active,
