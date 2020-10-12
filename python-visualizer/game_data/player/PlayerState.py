@@ -1,7 +1,7 @@
 from enum import Enum
 
-from simulation.game.Board import Board
-from simulation.player.PlayerAction import PlayerAction
+from game_data.game.Board import Board
+from game_data.player.PlayerAction import PlayerAction
 
 
 class PlayerDirection(Enum):

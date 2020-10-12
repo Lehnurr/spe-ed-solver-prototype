@@ -1,10 +1,10 @@
 from players.BasePlayer import BasePlayer
-from simulation.player.PlayerAction import PlayerAction
+from game_data.player.PlayerAction import PlayerAction
 import random
 from analysis import full_range
-from simulation.player.PlayerState import PlayerState
-from simulation.player.PlayerState import PlayerDirection
-from simulation.game.Board import Board
+from game_data.player.PlayerState import PlayerState
+from game_data.player.PlayerState import PlayerDirection
+from game_data.game.Board import Board
 import numpy as np
 
 

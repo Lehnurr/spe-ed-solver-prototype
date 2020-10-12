@@ -1,4 +1,4 @@
-from simulation.player.PlayerState import PlayerState
+from game_data.player.PlayerState import PlayerState
 
 
 class Player(object):

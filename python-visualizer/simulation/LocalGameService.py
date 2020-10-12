@@ -6,9 +6,9 @@ from datetime import datetime, timedelta
 from Event import Event
 from config import SIMULATION_DEADLINE
 
-from simulation.game.Board import Board
-from simulation.player.PlayerState import PlayerState, PlayerDirection
-from simulation.player.Player import Player
+from game_data.game.Board import Board
+from game_data.player.PlayerState import PlayerState, PlayerDirection
+from game_data.player.Player import Player
 
 
 class LocalGameService:

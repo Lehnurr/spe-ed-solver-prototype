@@ -1,5 +1,5 @@
 from players.BasePlayer import BasePlayer
-from simulation.player.PlayerAction import PlayerAction
+from game_data.player.PlayerAction import PlayerAction
 import random
 
 

@@ -1,8 +1,8 @@
 from datetime import datetime
 
-from simulation.game.Board import Board
-from simulation.player.PlayerAction import PlayerAction
-from simulation.player.PlayerState import PlayerDirection, PlayerState
+from game_data.game.Board import Board
+from game_data.player.PlayerAction import PlayerAction
+from game_data.player.PlayerState import PlayerDirection, PlayerState
 
 
 def calculate_ranges_for_player(board: Board, initial_state: PlayerState):
