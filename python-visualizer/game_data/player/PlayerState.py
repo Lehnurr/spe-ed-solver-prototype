@@ -96,13 +96,13 @@ class PlayerState:
 
         return child
 
-    def state_is_valid(self, board: Board) -> bool:
+    def verify_state(self, board: Board) -> bool:
         return 0 < self.speed <= 10 and board.point_is_on_board(self.position_x, self.position_y)
 
-    def verify_state(self, board: Board) -> bool:
+    def verify_move(self, board: Board) -> bool:
         # check for speed conditions
         # check if new pos is on board
-        if not self.state_is_valid(board):
+        if not self.verify_state(board):
             return False
 
         # check for collisions with other players

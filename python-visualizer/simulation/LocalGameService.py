@@ -64,7 +64,7 @@ class LocalGameService:
                 player.do_action_and_move()
                 for point in player.current_state.steps_to_this_point:
                     self.board.set_cell(point[0], point[1], player.player_id)
-                player.is_active &= player.current_state.state_is_valid(self.board)
+                player.is_active &= player.current_state.verify_state(self.board)
 
         for player in self.players:
             if player.is_active:

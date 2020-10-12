@@ -14,7 +14,7 @@ def calculate_ranges_for_player(board: Board, initial_state: PlayerState):
         possible_next_states = list(do_actions(next_states))
         next_states = []
         for state in possible_next_states:
-            if not state.verify_state(board):
+            if not state.verify_move(board):
                 continue  # remove state, (collision)
 
             if result_data.get((state.position_x, state.position_y), False):
