@@ -6,6 +6,10 @@
 
 import os
 
+
+# Python recursion limit.
+RECURSION_LIMIT = 10000
+
 # Webservice
 URL = "wss://msoll.de/spe_ed"
 API_KEY = 000000
