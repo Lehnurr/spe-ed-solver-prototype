@@ -11,7 +11,7 @@ def calculate_probabilities_for_players(
         depth: int,
         invalid_move_weight: float = 1) -> np.ndarray:
 
-    probabilities = np.zeros((board.height, board.height))
+    probabilities = np.zeros((board.height, board.width))
 
     for player_state in player_states:
         probabilities += calculate_probabilities_for_player(board, player_state, depth, invalid_move_weight)
@@ -28,7 +28,7 @@ def calculate_probabilities_for_player(
         depth: int,
         invalid_move_weight: float = 1) -> np.ndarray:
 
-    probabilities = np.zeros((board.height, board.height))
+    probabilities = np.zeros((board.height, board.width))
 
     for action in PlayerAction:
 
