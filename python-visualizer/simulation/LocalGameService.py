@@ -30,13 +30,13 @@ class LocalGameService:
         self.is_started = False
         self.deadline = None
         self.on_round_start = Event()
+        self.all_player_moved = False
 
     # Starts the Game and sends first Notification to the Player
     def start(self):
         self.is_started = True
         self.__reset_deadline()
-        if SIMULATION_DEADLINE > 0:
-            threading.Thread(target=self.__wait_and_end_round, args=()).start()
+        threading.Thread(target=self.__wait_and_end_round, args=()).start()
         self.__notify_player()
 
     # processes an User interaction
@@ -49,30 +49,7 @@ class LocalGameService:
             self.players[player - 1].is_active = False
 
         if self.__is_running() and all(not p.is_active or p.next_action is not None for p in self.players):
-            self.__next_round()
-
-    # Performs player actions, evaluates the score, ends the round, starts a new round and notifies the players
-    # is called automatically by the LocalGameService
-    def __next_round(self):
-        if not self.is_started:
-            return
-
-        self.__reset_deadline()
-
-        for player in self.players:
-            if player.is_active:
-                player.do_action_and_move()
-                for point in player.current_state.steps_to_this_point:
-                    self.board.set_cell(point[0], point[1], player.player_id)
-                player.is_active &= player.current_state.verify_state(self.board)
-
-        for player in self.players:
-            if player.is_active:
-                for point in player.current_state.steps_to_this_point:
-                    if self.board[point[1]][point[0]] == -1:
-                        player.is_active = False
-
-        self.__notify_player()
+            self.all_player_moved = True
 
     def __notify_player(self):
         self.on_round_start.notify(json.dumps({
@@ -86,15 +63,32 @@ class LocalGameService:
         }))
 
     def __reset_deadline(self):
-        remaining_seconds = SIMULATION_DEADLINE
-        self.deadline = datetime.utcnow() + timedelta(seconds=remaining_seconds)
+        if SIMULATION_DEADLINE:
+            self.deadline = datetime.utcnow() + timedelta(seconds=SIMULATION_DEADLINE)
 
     def __is_running(self) -> bool:
         return self.is_started and sum(p.is_active for p in self.players) > 1
 
-    # is running in extra thread: checks the deadline
+    # is running in extra thread: checks the deadline and ends round
     def __wait_and_end_round(self):
         while self.__is_running():
-            time.sleep(1)
-            if self.deadline < datetime.utcnow():
-                self.__next_round()
+            time.sleep(0.1)
+
+            if self.all_player_moved or self.deadline < datetime.utcnow():
+                self.__reset_deadline()
+
+                for player in self.players:
+                    if player.is_active:
+                        player.do_action_and_move()
+                        for point in player.current_state.steps_to_this_point:
+                            self.board.set_cell(point[0], point[1], player.player_id)
+                        player.is_active &= player.current_state.verify_state(self.board)
+
+                for player in self.players:
+                    if player.is_active:
+                        for point in player.current_state.steps_to_this_point:
+                            if self.board[point[1]][point[0]] == -1:
+                                player.is_active = False
+
+                self.all_player_moved = False
+                self.__notify_player()

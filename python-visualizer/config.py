@@ -27,7 +27,7 @@ SIMULATION_BOARD_WIDTH = 64
 SIMULATION_BOARD_HEIGHT = 64
 
 NOTIFY_SIMULATED_PLAYER_ASYNC = False
-SIMULATION_DEADLINE = -1
+SIMULATION_DEADLINE = None
 
 if os.path.exists(os.path.join(os.path.dirname(__file__), 'config_local.py')):
     from config_local import *
