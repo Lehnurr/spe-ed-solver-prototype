@@ -5,12 +5,11 @@ from game_data.player.PlayerAction import PlayerAction
 from game_data.player.PlayerState import PlayerDirection, PlayerState
 
 
-def calculate_ranges_for_player(board: Board, initial_state: PlayerState):
-    print(f'start: {datetime.now()}')
+def calculate_ranges_for_player(board: Board, initial_state: PlayerState, lookup_round_count: int = -1):
     result_data = {}
 
     next_states = [initial_state]
-    while len(next_states) > 0:
+    while len(next_states) > 0 and lookup_round_count != 0:
         possible_next_states = list(do_actions(next_states))
         next_states = []
         for state in possible_next_states:
@@ -22,9 +21,8 @@ def calculate_ranges_for_player(board: Board, initial_state: PlayerState):
 
             result_data[(state.position_x, state.position_y)] = state
             next_states.append(state)
+        lookup_round_count -= 1
 
-    print(f'end: {datetime.now()}')
-    print(f'found {len(result_data)} elements')
     return result_data
 
 
