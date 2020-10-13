@@ -74,7 +74,7 @@ class LocalGameService:
         while self.__is_running():
             time.sleep(0.1)
 
-            if self.all_player_moved or self.deadline < datetime.utcnow():
+            if self.all_player_moved or self.deadline and self.deadline < datetime.utcnow():
                 self.__reset_deadline()
 
                 for player in self.players:
