@@ -63,8 +63,13 @@ class LocalGameService:
         }))
 
     def __reset_deadline(self):
-        if SIMULATION_DEADLINE:
-            self.deadline = datetime.utcnow() + timedelta(seconds=SIMULATION_DEADLINE)
+        deadline_seconds = SIMULATION_DEADLINE
+
+        if not deadline_seconds:
+            # default deadline is 1 Day
+            deadline_seconds = 60 * 60 * 24
+
+        self.deadline = datetime.utcnow() + timedelta(seconds=deadline_seconds)
 
     def __is_running(self) -> bool:
         return self.is_started and sum(p.is_active for p in self.players) > 1
