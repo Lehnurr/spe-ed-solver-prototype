@@ -36,8 +36,8 @@ class LocalGameService:
     def start(self):
         self.is_started = True
         self.__reset_deadline()
-        threading.Thread(target=self.__wait_and_end_round, args=()).start()
         self.__notify_player()
+        self.__wait_and_end_round()
 
     # processes an User interaction
     def do_action(self, player: int, player_action):
