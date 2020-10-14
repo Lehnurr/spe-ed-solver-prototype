@@ -36,7 +36,7 @@ class EnemyProbabilityFullRangePlayer(BasePlayer):
         # build enemy player states
         enemy_player_states = []
         for player_id, player in step_info["players"].items():
-            if str(step_info["you"]) != player_id:
+            if str(step_info["you"]) != player_id and player["active"]:
                 enemy_player_states.append(
                     PlayerState(
                         PlayerDirection[player["direction"].upper()],
@@ -46,12 +46,18 @@ class EnemyProbabilityFullRangePlayer(BasePlayer):
                         self.roundCounter))
 
         # calculate enemy probabilities
-        enemy_probabilities = player_location_probability.calculate_probabilities_for_players(self.board,
-                                                                                              enemy_player_states,
-                                                                                              5)
+        enemy_probabilities = \
+            player_location_probability.calculate_probabilities_for_players(self.board, enemy_player_states,
+                                                                            depth=5, invalid_move_weight=0)
 
         # add probability to viewer
         slice_viewer.add_data("enemy_probability", enemy_probabilities, normalize=False)
+
+        # apply threshold to probabilities
+        enemy_probabilities[enemy_probabilities > 0.4] = 1
+
+        # update board with probabilities
+        self.board.cells = enemy_probabilities.tolist()
 
         # calculate action
         full_range_result = full_range.calculate_ranges_for_player(self.board, self.playerState)
