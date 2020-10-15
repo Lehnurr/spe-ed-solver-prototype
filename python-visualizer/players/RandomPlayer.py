@@ -9,7 +9,6 @@ class RandomPlayer(BasePlayer):
         pass
 
     def handle_step(self, step_info, slice_viewer):
-        print("<", step_info)
         own_player = step_info["players"][str(step_info["you"])]
 
         valid_actions = [PlayerAction.TURN_LEFT, PlayerAction.TURN_RIGHT, PlayerAction.CHANGE_NOTHING]
