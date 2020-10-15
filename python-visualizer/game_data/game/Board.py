@@ -25,6 +25,17 @@ class Board:
     def point_is_available(self, x: int, y: int) -> bool:
         return self.point_is_on_board(x, y) and self.cells[y][x] == 0
 
+    def get_neighbors(self, x, y):
+        x1 = x - 1 if x > 0 else x
+        y1 = y - 1 if y > 0 else y
+        x2 = x + 1 if x + 1 < self.width else x
+        y2 = y + 1 if y + 1 < self.height else y
+        # get all neighbors the center cell
+        neighbors_and_i = list(self.get_points_in_rectangle(x1, y1, x2, y2))
+        # remove the center-cell
+        neighbors_and_i.remove((x, y))
+        return neighbors_and_i
+
     def copy(self):
         copy = Board(self.width, self.height)
         copy.cells = deepcopy(self.cells)
