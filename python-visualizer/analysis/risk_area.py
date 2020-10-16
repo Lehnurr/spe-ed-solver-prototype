@@ -39,18 +39,18 @@ def calculate_risk_areas(board: Board, cluster_tolerance: float = 0):
             for neighbor in board.get_neighbors(last[0], last[1]):
                 if not neighbor or risk_evaluation[neighbor[1]][neighbor[0]] > 0 or neighbor in to_be_evaluated:
                     continue
-                neighbors_risk_clockwise = [(1 if i is None else risk_evaluation[neighbor[1]][neighbor[0]]) for i in
+                neighbors_risk_clockwise = [(1 if i is None else risk_evaluation[i[1]][i[0]]) for i in
                                             board.get_neighbors(neighbor[0], neighbor[1])]
                 to_be_evaluated[neighbor] = RiskClass(0, neighbors_risk_clockwise)
 
         last_evaluated.clear()
 
         # Sort neighbors by pattern weight
-        to_be_evaluated = {k: v for k, v in sorted(to_be_evaluated.items(), key=lambda item: item[1].pattern.value[2])}
+        to_be_evaluated = {k: v for k, v in sorted(to_be_evaluated.items(), key=lambda item: item[1].pattern.value[2], reverse=True)}
 
         for n in to_be_evaluated.items():
             position = n[0]
-            neighbors_risk_clockwise = [(1 if i is None else risk_evaluation[position[1]][position[0]]) for i in
+            neighbors_risk_clockwise = [(1 if i is None else risk_evaluation[i[1]][i[0]]) for i in
                                         board.get_neighbors(position[0], position[1])]
 
             # Set neighbors neighbors new & calculate risk
@@ -81,7 +81,7 @@ class RiskClass:
         self.set_neighbors(neighbors_risk_clockwise)
 
     def get_risk(self):
-        if self.__center_risk:
+        if self.__center_risk > 0:
             return self.__center_risk
         elif self.__risk:
             return self.__risk
@@ -116,11 +116,11 @@ class RiskClass:
 
 class RiskPattern(Enum):
     # (Pattern, number_of_low_neighbors, weighting of the high values)
-    Surrounded = ("HHHH", 0, 1)
-    DeadEnd = ("HHHL", 1, 2)
-    Corner = ("HHLL", 2, 1.5)
-    Lane = ("HLHL", 2, 1)
-    Obstacle = ("HLLL", 3, 0.75)
+    Surrounded = ("HHHH", 0, 2.5)
+    DeadEnd = ("HHHL", 1, 3)
+    Corner = ("HHLL", 2, 2)
+    Lane = ("HLHL", 2, 1.5)
+    Obstacle = ("HLLL", 3, 1)
     Empty = ("LLLL", 4, 0)
 
     @staticmethod
@@ -145,6 +145,5 @@ class RiskPattern(Enum):
 
 if __name__ == "__main__":
     # Test Data
-    b = Board(3, 3)
-    b[1][1] = 1
+    b = Board(25, 25)
     print(calculate_risk_areas(b))

@@ -1,3 +1,4 @@
+from config import LOG_PATH
 from game_connection.BaseConnector import BaseConnector
 from simulation.LocalGameService import LocalGameService
 import json
@@ -7,6 +8,7 @@ class SimulationConnector(BaseConnector):
 
     def __init__(self, board_width, board_height, player_controllers):
         self.localGameService = LocalGameService(board_width, board_height, len(player_controllers))
+        self.log_path = None
         for player_idx, player_controller in enumerate(player_controllers):
             self.localGameService.on_round_start += \
                 self.RoundActionHandler(player_idx + 1, player_controller, self.localGameService).round_action
