@@ -33,15 +33,13 @@ def calculate_risk_areas(board: Board, cluster_tolerance: float = 0):
     last_evaluated = {(cols[index], rows[index]): 1 for index in range(0, len(rows))}
 
     while len(last_evaluated) > 0:
-        print(np.count_nonzero(risk_evaluation))
-
         # Get neighbors of last evaluated
         to_be_evaluated: Dict[Tuple[int, int], RiskClass] = {}
         for last in last_evaluated.keys():
             for neighbor in board.get_neighbors(last[0], last[1]):
                 if not neighbor or risk_evaluation[neighbor[1]][neighbor[0]] > 0 or neighbor in to_be_evaluated:
                     continue
-                neighbors_risk_clockwise = [(1 if i is None else risk_evaluation[neighbor[1], neighbor[0]]) for i in
+                neighbors_risk_clockwise = [(1 if i is None else risk_evaluation[neighbor[1]][neighbor[0]]) for i in
                                             board.get_neighbors(neighbor[0], neighbor[1])]
                 to_be_evaluated[neighbor] = RiskClass(0, neighbors_risk_clockwise)
 
@@ -52,7 +50,7 @@ def calculate_risk_areas(board: Board, cluster_tolerance: float = 0):
 
         for n in to_be_evaluated.items():
             position = n[0]
-            neighbors_risk_clockwise = [(1 if i is None else risk_evaluation[position[1], position[0]]) for i in
+            neighbors_risk_clockwise = [(1 if i is None else risk_evaluation[position[1]][position[0]]) for i in
                                         board.get_neighbors(position[0], position[1])]
 
             # Set neighbors neighbors new & calculate risk
@@ -147,9 +145,6 @@ class RiskPattern(Enum):
 
 if __name__ == "__main__":
     # Test Data
-    b = Board(10, 11)
-    b[0][0] = 6
-    b[2][1] = 2
-    b[1][1] = -1
-    b[5][6] = 1
+    b = Board(3, 3)
+    b[1][1] = 1
     print(calculate_risk_areas(b))
