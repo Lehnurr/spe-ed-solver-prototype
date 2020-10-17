@@ -11,6 +11,10 @@ class PlayerController:
 
     def handle_step(self, step_info):
 
+        # console logging
+        if step_info["you"] == 1:
+            print(self.playerInstance.roundCounter)
+
         # create if not exist: SliceViewer of fitting dimensions with initialised attributes
         if not self.sliceViewer:
             self.sliceViewer = SliceViewer(step_info["width"], step_info["height"], self.sliceViewerAttributes)
