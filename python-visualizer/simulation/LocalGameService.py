@@ -1,7 +1,9 @@
+import itertools
 import json
 import threading
 import time
 from datetime import datetime, timedelta
+import random
 
 from Event import Event
 from config import SIMULATION_DEADLINE
@@ -20,10 +22,18 @@ class LocalGameService:
         self.players = []
 
         # Init Player
+        y_start_positions = list(range(1, self.board.width - 1))
+        x_start_positions = list(range(1, self.board.height - 1))
+        del y_start_positions[::2]
+        del x_start_positions[::2]
+
+        start_positions = list(itertools.product(y_start_positions, x_start_positions))
+        random.shuffle(start_positions)
+
         for player_id in range(1, player_count + 1):
-            start_cell = start_point_distance * player_id
+            start_cell = start_positions.pop()
             player = Player(player_id,
-                            PlayerState(PlayerDirection.LEFT, 1, start_cell % width, start_cell // self.board.width))
+                            PlayerState(PlayerDirection.LEFT, 1, start_cell[0], start_cell[1]))
             self.board.set_cell(player.current_state.position_x, player.current_state.position_y, player.player_id)
             self.players.append(player)
 
