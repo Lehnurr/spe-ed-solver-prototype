@@ -63,7 +63,7 @@ class EnemyProbabilityFullRangePlayer(BasePlayer):
                 if safe_area_idx >= 0:
                     safe_area = safe_areas[safe_area_idx]
                     safe_area_sizes[y, x] = len(safe_area.points)
-        slice_viewer.add_data("safe_area_sizes", safe_area_sizes, normalize=True)
+        slice_viewer.add_data("safe_area_sizes", safe_area_sizes, normalize=False)
 
         # add risk_area to viewer
         slice_viewer.add_data("risk_evaluation", risk_area.calculate_risk_areas(self.board), normalize=False)
