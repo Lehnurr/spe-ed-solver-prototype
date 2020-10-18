@@ -13,9 +13,9 @@ class PlayerController:
 
         # console logging
         if step_info["you"] == 1:
-            print(self.playerInstance.roundCounter)
-        print(f"Player {step_info['you']}:")
-        print(f"\treceived info: {step_info}")
+            print(f"Round {self.playerInstance.roundCounter}:")
+        print(f"\tPlayer {step_info['you']}:")
+        print(f"\t\treceived info: {step_info}")
 
         # create if not exist: SliceViewer of fitting dimensions with initialised attributes
         if not self.sliceViewer:
@@ -35,7 +35,7 @@ class PlayerController:
         # logging
         self.sliceViewer.add_data("game_state", step_info["cells"])
         self.sliceViewer.next_step()
-        print(f"\tsent action: {action.name}")
+        print(f"\t\tsent action: {action.name}")
 
         # return result
         return action
