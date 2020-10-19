@@ -14,21 +14,9 @@ def calculate_risk_areas(board: Board, cluster_tolerance: float = 0):
     rows = list(rows)
     cols = list(cols)
 
-    # Add the top board border
-    rows += [-1] * board.width
-    cols += range(0, board.width)
-
-    # Add the bottom board border
-    rows += [board.height] * board.width
-    cols += range(0, board.width)
-
-    # Add the left board border
-    cols += [-1] * board.height
-    rows += range(0, board.height)
-
-    # Add the right board border
-    cols += [board.width] * board.height
-    rows += range(0, board.height)
+    # Add the  board borders
+    rows += [-1] * board.width + [board.height] * board.width + [-1] * board.height + [board.width] * board.height
+    cols += list(range(0, board.width)) * 2 + list(range(0, board.height)) * 2
 
     last_evaluated = {(cols[index], rows[index]): 1 for index in range(0, len(rows))}
 
@@ -64,7 +52,7 @@ def calculate_risk_areas(board: Board, cluster_tolerance: float = 0):
     #  Cluster the results to 1 * 2, 2 * 2, 2 * 3, ... cells
     #  set as new value the average value of all clustered cells
     #  Note the cluster_tolerance
-    #  Cluster also cells with value 1!!!!
+    #  Cluster also cells with value 1!
 
     if cluster_tolerance > 0:
         raise Exception("Clustering is not implemented")
