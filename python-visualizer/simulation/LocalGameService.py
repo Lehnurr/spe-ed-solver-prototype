@@ -33,7 +33,7 @@ class LocalGameService:
         for player_id in range(1, player_count + 1):
             start_cell = start_positions.pop()
             player = Player(player_id,
-                            PlayerState(PlayerDirection.LEFT, 1, start_cell[0], start_cell[1]))
+                            PlayerState(random.choice(list(PlayerDirection)), 1, start_cell[0], start_cell[1]))
             self.board.set_cell(player.current_state.position_x, player.current_state.position_y, player.player_id)
             self.players.append(player)
 
