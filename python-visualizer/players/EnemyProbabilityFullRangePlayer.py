@@ -77,7 +77,11 @@ class EnemyProbabilityFullRangePlayer(BasePlayer):
 
         # calculate action
         full_range_result = full_range.calculate_ranges_for_player(self.board, self.playerState)
-        path_options = list(full_range_result.values())
+        path_options = [state
+                        for directions in full_range_result.values()
+                        for speeds in directions.values()
+                        for state in speeds.values()]
+
         if len(path_options) > 0:
 
             # determine action with highest amount of reachable points
@@ -94,8 +98,13 @@ class EnemyProbabilityFullRangePlayer(BasePlayer):
 
         # add path options to viewer
         path_steps_array = np.zeros((step_info["height"], step_info["width"]))
-        for key, value in full_range_result.items():
-            path_steps_array[key[1], key[0]] = value.game_round - self.roundCounter
+        for option in path_options:
+            x = option.position_x
+            y = option.position_y
+            current_value = path_steps_array[y, x]
+            new_value = option.game_round - self.roundCounter
+            path_steps_array[y, x] = new_value if current_value == 0 else min(current_value, new_value)
+
         slice_viewer.add_data("full_range_steps", path_steps_array)
 
         # apply action to local model
