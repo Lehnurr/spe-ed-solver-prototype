@@ -1,7 +1,7 @@
+from analysis.full_range import full_range
 from players.BasePlayer import BasePlayer
 from game_data.player.PlayerAction import PlayerAction
 import random
-from analysis import full_range
 from game_data.player.PlayerState import PlayerState
 from game_data.player.PlayerState import PlayerDirection
 from game_data.game.Board import Board
