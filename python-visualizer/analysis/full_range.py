@@ -1,6 +1,7 @@
 from datetime import datetime
 from enum import Enum
 from typing import List
+import time
 
 from game_data.game.Board import Board
 from game_data.player.PlayerAction import PlayerAction
@@ -28,10 +29,10 @@ class FullRangePrecision(Enum):
         }
 
     @staticmethod
-    def get_precision_by_round(game_round: int):
-        if game_round < 3:
+    def get_precision_by_state_count(number_of_states: int):
+        if number_of_states < 1200:
             return FullRangePrecision.FULL_PRECISION
-        elif game_round < 5:
+        elif number_of_states < 2000:
             return FullRangePrecision.TWO_DIRECTIONS_FOUR_SPEEDS
         else:
             return FullRangePrecision.ONE_DIRECTION_ONE_SPEED
@@ -51,7 +52,6 @@ class FullRangePrecision(Enum):
 
 def calculate_ranges_for_player(board: Board, initial_state: PlayerState, lookup_round_count: int = -1):
     result_data = {}
-
     next_states = [initial_state]
     current_round = 0
     while len(next_states) > 0 and lookup_round_count != current_round:
@@ -62,7 +62,7 @@ def calculate_ranges_for_player(board: Board, initial_state: PlayerState, lookup
                 continue  # remove state, (collision)
 
             position_dict = result_data.get((state.position_x, state.position_y), {})
-            if not add_state_to_dict(state, position_dict, FullRangePrecision.get_precision_by_round(current_round)):
+            if not add_state_to_dict(state, position_dict, FullRangePrecision.get_precision_by_state_count(len(possible_next_states))):
                 continue  # remove state, (there's already a similar solution)
 
             result_data[(state.position_x, state.position_y)] = position_dict
@@ -111,6 +111,10 @@ def add_state_to_dict(state: PlayerState, result_dict, precision: FullRangePreci
 
 
 if __name__ == "__main__":
+    start = time.time()
     print(F"start full_range @{datetime.now().time()}")
-    calculate_ranges_for_player(Board(100, 100), PlayerState(PlayerDirection.DOWN, 1, 4, 4))
+    print(len(calculate_ranges_for_player(Board(64, 64), PlayerState(PlayerDirection.DOWN, 1, 4, 4)).keys()))
+    end = time.time()
+    print(F"total seconds: {end - start}")
     print(F"end full_range   @{datetime.now().time()}")
+
