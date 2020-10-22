@@ -1,16 +1,16 @@
 import numpy as np
 from typing import List
 from typing import Tuple
-from typing import Dict
 from skimage import measure
-from skimage import filters
-from matplotlib import pyplot as plt
 
 
 class SafeArea:
 
     def __init__(self):
         self.points = []
+
+    def join(self, other):
+        self.points += other.points
 
 
 # returns tuple of list of found areas and image of input size with ids of corresponding idx in list
@@ -28,6 +28,7 @@ def detect_safe_areas(input_array: np.ndarray) -> Tuple[List[SafeArea], np.ndarr
         for x in range(working_array.shape[1]):
             idx = labels[y, x] - 1
             indexes[y, x] = idx
-            result_area_list[idx].points.append((x, y))
+            if idx >= 0:
+                result_area_list[idx].points.append((x, y))
 
     return result_area_list, indexes
