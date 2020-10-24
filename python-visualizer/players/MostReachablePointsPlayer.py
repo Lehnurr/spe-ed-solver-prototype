@@ -97,8 +97,6 @@ class MostReachablePointsPlayer(BasePlayer):
                     max_probability_of_steps = max(probabilities_in_next_step[y, x], max_probability_of_steps)
                 action_histogram[action] = (1 - max_probability_of_steps) * possible_points_count
 
-        print(action_histogram)
-
         # chose action based of highest value
         action = max(action_histogram, key=action_histogram.get)
 
