@@ -3,6 +3,7 @@ from game_data.player.PlayerAction import PlayerAction
 from analysis import risk_area
 from analysis.full_range import no_risk_full_range
 from analysis import probability_based_prediction
+from analysis import reachable_points
 from analysis import safe_area_detection
 from game_data.player.PlayerState import PlayerState
 from game_data.player.PlayerState import PlayerDirection
@@ -34,6 +35,8 @@ class MostReachablePointsPlayer(BasePlayer):
 
         # update cells
         self.board.cells = step_info["cells"]
+
+        reachable_points.calculate_reachable_points(self.playerState, self.board)
 
         # build enemy player states
         enemy_player_states = []
