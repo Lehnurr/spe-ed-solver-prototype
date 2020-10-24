@@ -1,6 +1,5 @@
 from players.BasePlayer import BasePlayer
 from game_data.player.PlayerAction import PlayerAction
-import random
 from analysis import full_range, risk_area
 from analysis import probability_based_prediction
 from analysis import safe_area_detection
@@ -76,13 +75,30 @@ class MostReachablePointsPlayer(BasePlayer):
         # update board with probabilities
         self.board.cells = enemy_probabilities.tolist()
 
-        # determine action with highest amount of reachable points
+        # determine amount of reachable points for each action
         player_action_array = [player_action for player_action in PlayerAction]
         pool = mp.Pool(mp.cpu_count())
-        path_option_results = pool.map(self.get_full_range_path_options_for_action, player_action_array)
+        path_option_results = pool.map(
+            self.get_full_range_path_options_for_action, player_action_array)
         pool.close()
         action_histogram = {player_action: len(path_option_results[player_action_array.index(player_action)])
                             for player_action in PlayerAction}
+        # apply inverse weight based on probability of next possible enemy step
+        probabilities_in_next_step = np.copy(enemy_probabilities)
+        probabilities_in_next_step[enemy_min_steps != 1] = 0
+        for action, possible_points_count in action_histogram.items():
+            if possible_points_count > 0:
+                current_player_state = self.playerState.copy()
+                current_player_state.do_action(action)
+                possible_next_player_state = current_player_state.do_move()
+                max_probability_of_steps = 0
+                for x, y in possible_next_player_state.steps_to_this_point:
+                    max_probability_of_steps = max(probabilities_in_next_step[y, x], max_probability_of_steps)
+                action_histogram[action] = (1 - max_probability_of_steps) * possible_points_count
+
+        print(action_histogram)
+
+        # chose action based of highest value
         action = max(action_histogram, key=action_histogram.get)
 
         # add path options to viewer
