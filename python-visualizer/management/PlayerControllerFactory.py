@@ -1,6 +1,7 @@
 from players.RandomPlayer import RandomPlayer
 from players.RandomFullRangePlayer import RandomFullRangePlayer
 from players.EnemyProbabilityFullRangePlayer import EnemyProbabilityFullRangePlayer
+from players.MostReachablePointsPlayer import MostReachablePointsPlayer
 from management.PlayerController import PlayerController
 
 
@@ -18,6 +19,9 @@ def get_player_controllers(selected_player_types, player_count):
 
         if selected_player_type == "EnemyProbabilityFullRangePlayer":
             current_player_instance = EnemyProbabilityFullRangePlayer()
+
+        if selected_player_type == "MostReachablePointsPlayer":
+            current_player_instance = MostReachablePointsPlayer()
 
         assert(current_player_instance is not None)
         player_instances.append(current_player_instance)
