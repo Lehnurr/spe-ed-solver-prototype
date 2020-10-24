@@ -6,7 +6,7 @@ class Board:
         self.width = width
         self.height = height
         self.cell_count = self.width * self.height
-        self.cells = [[0 for x in range(width)] for y in range(height)]
+        self.cells = [[0. for x in range(width)] for y in range(height)]
 
     def __getitem__(self, row_index):
         return self.cells[row_index]
@@ -23,7 +23,7 @@ class Board:
         return 0 <= x < self.width and 0 <= y < self.height
 
     def point_is_available(self, x: int, y: int) -> bool:
-        return self.point_is_on_board(x, y) and self.cells[y][x] == 0
+        return self.point_is_on_board(x, y) and (self.cells[y][x] == 0 or not self.cells[y][x].is_integer())
 
     # returns the direct neighbors clockwise, starts with the left neighbor
     def get_neighbors(self, x, y):
