@@ -35,7 +35,7 @@ class ReachablePointsCalculation:
         self.__running = False
         self.__thread.join()
 
-    def get_result(self):
+    def get_result(self) -> np.ndarray:
         return self.__reachablePoints.copy()
 
 
