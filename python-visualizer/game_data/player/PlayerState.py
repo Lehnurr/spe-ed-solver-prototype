@@ -36,6 +36,8 @@ class PlayerState:
         self.action = None
         self.steps_to_this_point = []
         self.collided_with_own_line = False
+        # This field is optional for algorithms that determine the risk for this step
+        self.optional_risk = 0.0
 
     def do_action(self, action: PlayerAction):
         if self.action is not None:
@@ -122,6 +124,7 @@ class PlayerState:
         copy.action = self.action
         copy.all_steps = self.all_steps.copy()
         copy.steps_to_this_point = self.steps_to_this_point.copy()
+        copy.optional_risk = self.optional_risk
         return copy
 
     def __str__(self):

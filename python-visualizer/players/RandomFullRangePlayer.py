@@ -1,7 +1,7 @@
+from analysis.full_range import no_risk_full_range
 from players.BasePlayer import BasePlayer
 from game_data.player.PlayerAction import PlayerAction
 import random
-from analysis import full_range
 from game_data.player.PlayerState import PlayerState
 from game_data.player.PlayerState import PlayerDirection
 from game_data.game.Board import Board
@@ -33,7 +33,7 @@ class RandomFullRangePlayer(BasePlayer):
         self.board.cells = step_info["cells"]
 
         # calculate action
-        full_range_result = full_range.calculate_ranges_for_player(self.board, self.playerState)
+        full_range_result = no_risk_full_range.calculate_ranges_for_player(self.board, self.playerState)
         path_options = [state
                         for directions in full_range_result.values()
                         for speeds in directions.values()

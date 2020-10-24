@@ -1,7 +1,8 @@
+from analysis.full_range import no_risk_full_range
 from players.BasePlayer import BasePlayer
 from game_data.player.PlayerAction import PlayerAction
 import random
-from analysis import full_range, risk_area
+from analysis import risk_area
 from analysis import probability_based_prediction
 from analysis import safe_area_detection
 from game_data.player.PlayerState import PlayerState
@@ -76,7 +77,7 @@ class EnemyProbabilityFullRangePlayer(BasePlayer):
         self.board.cells = enemy_probabilities.tolist()
 
         # calculate action
-        full_range_result = full_range.calculate_ranges_for_player(self.board, self.playerState)
+        full_range_result = no_risk_full_range.calculate_ranges_for_player(self.board, self.playerState)
         path_options = [state
                         for directions in full_range_result.values()
                         for speeds in directions.values()

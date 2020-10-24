@@ -1,10 +1,9 @@
-from datetime import datetime
 from enum import Enum
-from typing import List
+from operator import attrgetter
+from typing import List, Dict, Tuple
 
-from game_data.game.Board import Board
 from game_data.player.PlayerAction import PlayerAction
-from game_data.player.PlayerState import PlayerDirection, PlayerState
+from game_data.player.PlayerState import PlayerState, PlayerDirection
 
 
 class FullRangePrecision(Enum):
@@ -28,10 +27,10 @@ class FullRangePrecision(Enum):
         }
 
     @staticmethod
-    def get_precision_by_round(game_round: int):
-        if game_round < 3:
+    def get_precision_by_state_count(number_of_states: int):
+        if number_of_states < 1200:
             return FullRangePrecision.FULL_PRECISION
-        elif game_round < 5:
+        elif number_of_states < 2000:
             return FullRangePrecision.TWO_DIRECTIONS_FOUR_SPEEDS
         else:
             return FullRangePrecision.ONE_DIRECTION_ONE_SPEED
@@ -49,58 +48,47 @@ class FullRangePrecision(Enum):
         return current_speed in ungrouped_speeds
 
 
-def calculate_ranges_for_player(board: Board, initial_state: PlayerState, lookup_round_count: int = -1):
-    result_data = {}
+def replace_if_better(state, result_dict) -> bool:
+    if state.optional_risk == 0:
+        return False  # can't determine the better if there is no risk
 
-    next_states = [initial_state]
-    current_round = 0
-    while len(next_states) > 0 and lookup_round_count != current_round:
-        possible_next_states = list(do_actions(next_states))
-        next_states = []
-        for state in possible_next_states:
-            if not state.verify_move(board):
-                continue  # remove state, (collision)
+    current_value = result_dict.get(state.direction, {}).get(state.speed, None)
 
-            position_dict = result_data.get((state.position_x, state.position_y), {})
-            if not add_state_to_dict(state, position_dict, FullRangePrecision.get_precision_by_round(current_round)):
-                continue  # remove state, (there's already a similar solution)
+    # True if it is replaced or added because its better than all equivalents.
+    if current_value is None:
+        current_min_risk = min([state for speed in result_dict.values() for state in speed.values()],
+                               key=attrgetter('optional_risk')).optional_risk
+        if state.optional_risk < current_min_risk:
+            result_dict.setdefault(state.direction, {})[state.speed] = state
+            return True
+    elif current_value.optional_risk > state.optional_risk:
+        result_dict[state.direction][state.speed] = state
+        return True
 
-            result_data[(state.position_x, state.position_y)] = position_dict
-            next_states.append(state)
-        current_round += 1
-
-    return result_data
-
-
-def do_actions(state_list):
-    for state in state_list:
-        for action in PlayerAction:
-            copy = state.copy()
-            copy.do_action(action)
-            yield copy.do_move()
+    return False
 
 
 def add_state_to_dict(state: PlayerState, result_dict, precision: FullRangePrecision) -> bool:
     direction = state.direction
 
     if precision == FullRangePrecision.ONE_DIRECTION_ONE_SPEED and len(result_dict) > 0:
-        return False
+        return replace_if_better(state, result_dict)
     elif precision == FullRangePrecision.FULL_PRECISION\
             and result_dict.get(state.direction, {}).get(state.speed, False):
-        return False
+        return replace_if_better(state, result_dict)
     elif precision == FullRangePrecision.TWO_DIRECTIONS_FOUR_SPEEDS:
         direction_left = direction.turn(PlayerAction.TURN_LEFT)
         direction_right = direction.turn(PlayerAction.TURN_RIGHT)
         if direction in result_dict.keys()\
                 and FullRangePrecision.speed_is_already_set(state.speed, result_dict[direction].keys(), precision):
-            return False
+            return replace_if_better(state, result_dict)
         elif direction_left in result_dict.keys():
             if FullRangePrecision.speed_is_already_set(state.speed, result_dict[direction_left].keys(), precision):
-                return False
+                return replace_if_better(state, result_dict)
             direction = direction_left
         elif direction_right in result_dict.keys():
             if FullRangePrecision.speed_is_already_set(state.speed, result_dict[direction_right].keys(), precision):
-                return False
+                return replace_if_better(state, result_dict)
             direction = direction_right
 
     # Add state to the Dict
@@ -108,9 +96,3 @@ def add_state_to_dict(state: PlayerState, result_dict, precision: FullRangePreci
     sub_dict.setdefault(state.speed, state)
     result_dict[direction] = sub_dict
     return True
-
-
-if __name__ == "__main__":
-    print(F"start full_range @{datetime.now().time()}")
-    calculate_ranges_for_player(Board(100, 100), PlayerState(PlayerDirection.DOWN, 1, 4, 4))
-    print(F"end full_range   @{datetime.now().time()}")
