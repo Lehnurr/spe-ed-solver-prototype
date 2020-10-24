@@ -16,20 +16,18 @@ class ReachablePointsCalculation:
         self.__thread.start()
 
     def __run(self):
-        if not self.__running:
-            self.__running = True
-            while True:
-                if len(self.__queue) == 0 or not self.__running:
-                    break
-                local_base_state = self.__queue.pop(0)
-                for action in PlayerAction:
-                    state_copy = local_base_state.copy()
-                    state_copy.do_action(action)
-                    state_variation = state_copy.do_move()
-                    if state_variation.verify_move(self.__board):
-                        self.__queue.append(state_variation)
-                        for x, y in state_variation.steps_to_this_point:
-                            self.__reachablePoints[y, x] = 1
+        while True:
+            if len(self.__queue) == 0 or not self.__running:
+                break
+            local_base_state = self.__queue.pop(0)
+            for action in PlayerAction:
+                state_copy = local_base_state.copy()
+                state_copy.do_action(action)
+                state_variation = state_copy.do_move()
+                if state_variation.verify_move(self.__board):
+                    self.__queue.append(state_variation)
+                    for x, y in state_variation.steps_to_this_point:
+                        self.__reachablePoints[y, x] = 1
 
     def stop(self):
         self.__running = False
