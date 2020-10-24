@@ -1,6 +1,7 @@
 from players.BasePlayer import BasePlayer
 from game_data.player.PlayerAction import PlayerAction
-from analysis import full_range, risk_area
+from analysis import risk_area
+from analysis.full_range import no_risk_full_range
 from analysis import probability_based_prediction
 from analysis import safe_area_detection
 from game_data.player.PlayerState import PlayerState
@@ -128,7 +129,7 @@ class MostReachablePointsPlayer(BasePlayer):
         player_state = player_state.do_move()
         if not player_state.verify_move(self.board):
             return []
-        full_range_result = full_range.calculate_ranges_for_player(self.board, player_state)
+        full_range_result = no_risk_full_range.calculate_ranges_for_player(self.board, player_state)
         path_options = [state
                         for directions in full_range_result.values()
                         for speeds in directions.values()
