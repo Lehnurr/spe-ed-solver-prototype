@@ -6,7 +6,7 @@ class Board:
         self.width = width
         self.height = height
         self.cell_count = self.width * self.height
-        self.cells = [[0. for x in range(width)] for y in range(height)]
+        self.cells = [[0 for x in range(width)] for y in range(height)]
 
     def __getitem__(self, row_index):
         return self.cells[row_index]
