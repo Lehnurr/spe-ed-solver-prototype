@@ -44,5 +44,5 @@ if __name__ == "__main__":
         for j in range(0, board.width):
             board[i][j] = random()
 
-    print(calculate_ranges_for_player(board, PlayerState(PlayerDirection.RIGHT, 1, 0, 0)))
+    calculate_ranges_for_player(board, PlayerState(PlayerDirection.RIGHT, 1, 0, 0))
 
