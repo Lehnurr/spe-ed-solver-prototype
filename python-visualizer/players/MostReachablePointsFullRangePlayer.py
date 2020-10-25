@@ -36,8 +36,6 @@ class MostReachablePointsFullRangePlayer(BasePlayer):
         # update cells
         self.board.cells = step_info["cells"]
 
-        reachable_points.calculate_reachable_points(self.playerState, self.board, 1)
-
         # build enemy player states
         enemy_player_states = []
         for player_id, player in step_info["players"].items():
