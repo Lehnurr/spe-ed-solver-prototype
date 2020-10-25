@@ -12,7 +12,7 @@ import numpy as np
 import multiprocessing as mp
 
 
-class MostReachablePointsPlayer(BasePlayer):
+class MostReachablePointsFullRangePlayer(BasePlayer):
 
     def __init__(self):
         self.roundCounter = 0
