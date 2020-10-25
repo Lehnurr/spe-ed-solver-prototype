@@ -32,7 +32,7 @@ class PlayerState:
         self.game_round = game_round
 
         self.previous: [PlayerState] = []
-        self.all_steps = {}
+        self.all_steps = {(x_position, y_position): self}
         self.action = None
         self.steps_to_this_point = []
         self.collided_with_own_line = False
