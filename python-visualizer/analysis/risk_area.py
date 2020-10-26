@@ -5,7 +5,7 @@ import numpy as np
 from game_data.game.Board import Board
 
 
-def calculate_risk_areas(board: Board, cluster_tolerance: float = 0):
+def calculate_risk_areas(board: Board):
     risk_evaluation = np.zeros((board.height, board.width))
     existing_cell_occupation = np.array(board.cells)
     risk_evaluation[existing_cell_occupation != 0] = 1
@@ -47,15 +47,6 @@ def calculate_risk_areas(board: Board, cluster_tolerance: float = 0):
             last_evaluated[position] = n[1]
             # Add the neighbor to risk evaluation
             risk_evaluation[position[1]][position[0]] = n[1].get_risk()
-
-    # TODO:
-    #  Cluster the results to 1 * 2, 2 * 2, 2 * 3, ... cells
-    #  set as new value the average value of all clustered cells
-    #  Note the cluster_tolerance
-    #  Cluster also cells with value 1!
-
-    if cluster_tolerance > 0:
-        raise Exception("Clustering is not implemented")
 
     return risk_evaluation
 

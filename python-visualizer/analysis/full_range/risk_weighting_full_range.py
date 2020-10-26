@@ -4,7 +4,6 @@ from analysis.full_range.next_range import calculate_next_states
 from game_data.game.Board import Board
 from game_data.player.PlayerState import PlayerDirection, PlayerState
 
-
 ROUND_WEIGHT = 0.5
 
 
