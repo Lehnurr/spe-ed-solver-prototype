@@ -1,10 +1,8 @@
 from players.BasePlayer import BasePlayer
 from game_data.player.PlayerAction import PlayerAction
-from analysis import risk_area
 from analysis.full_range import no_risk_full_range
 from analysis import probability_based_prediction
-from analysis import reachable_points
-from analysis import safe_area_detection
+from analysis.area_detection import safe_area_detection, risk_area_calculation
 from game_data.player.PlayerState import PlayerState
 from game_data.player.PlayerState import PlayerDirection
 from game_data.game.Board import Board
@@ -68,7 +66,7 @@ class MostReachablePointsFullRangePlayer(BasePlayer):
         slice_viewer.add_data("safe_area_sizes", safe_area_sizes, normalize=False)
 
         # add risk_area to viewer
-        slice_viewer.add_data("risk_evaluation", risk_area.calculate_risk_areas(self.board), normalize=False)
+        slice_viewer.add_data("risk_evaluation", risk_area_calculation.calculate_risk_areas(self.board), normalize=False)
 
         # apply threshold to probabilities
         enemy_probabilities[enemy_probabilities > 0.19] = 1

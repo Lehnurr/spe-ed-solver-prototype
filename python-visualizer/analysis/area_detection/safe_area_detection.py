@@ -8,6 +8,8 @@ class SafeArea:
 
     def __init__(self):
         self.points = []
+        # optional risk assessment for this area
+        self.optional_risk = 0.0
 
     def join(self, other):
         self.points += other.points
