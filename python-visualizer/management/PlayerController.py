@@ -1,4 +1,5 @@
 from visualisation.SliceViewer import SliceViewer
+import time
 
 
 class PlayerController:
@@ -16,6 +17,9 @@ class PlayerController:
             print(f"Round {self.playerInstance.roundCounter}:")
         print(f"\tPlayer {step_info['you']}:")
         print(f"\t\treceived info: {step_info}")
+
+        # note start time
+        start_time = time.time()
 
         # create if not exist: SliceViewer of fitting dimensions with initialised attributes
         if not self.sliceViewer:
@@ -35,7 +39,7 @@ class PlayerController:
         # logging
         self.sliceViewer.add_data("game_state", step_info["cells"])
         self.sliceViewer.next_step()
-        print(f"\t\tsent action: {action.name}")
+        print(f"\t\tsent action: {action.name} ({time.time() - start_time:.2f}s)")
 
         # return result
         return action
