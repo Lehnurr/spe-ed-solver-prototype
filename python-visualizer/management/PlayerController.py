@@ -13,7 +13,8 @@ class PlayerController:
     def handle_step(self, step_info):
 
         # console logging
-        if str(step_info["you"]) == str(list(step_info["players"].keys())[0]):
+        if str(step_info["you"]) == str(list(
+                {name: player for name, player in step_info["players"].items() if player["active"]}.keys())[0]):
             print(f"Round {self.playerInstance.roundCounter}:")
         print(f"\tPlayer {step_info['you']}:")
         print(f"\t\treceived info: {step_info}")
