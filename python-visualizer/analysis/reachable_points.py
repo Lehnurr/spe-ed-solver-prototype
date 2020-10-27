@@ -2,6 +2,7 @@ import time
 from game_data.game.Board import Board
 from game_data.player.PlayerState import PlayerState, PlayerAction
 import numpy as np
+import random
 
 
 def calculate_reachable_points(initial_player_state: PlayerState, board: Board, timeout: float = 0.0) -> np.ndarray:
@@ -32,20 +33,22 @@ def calculate_reachable_points_weighted(
         board: Board,
         risk_array: np.ndarray,
         min_step_array: np.ndarray,
-        timeout: float = 0.0) -> np.ndarray:
+        calculation_limit: int) -> np.ndarray:
 
     reachable_points = np.zeros((board.height, board.width))
     initial_weight = 1
     queue = [(initial_step_offset, initial_weight, initial_player_state)]
 
-    start_time = time.time()
+    calculations = 0
 
-    while time.time() - start_time < timeout or timeout == 0.0:
+    while calculations <= calculation_limit:
 
         if len(queue) == 0:
             break
 
-        local_step_offset, local_weight, local_base_state = queue.pop(0)
+        local_step_offset, local_weight, local_base_state = queue.pop(random.randrange(len(queue)))
+
+        calculations += 1
 
         if local_base_state.verify_move(board):
             highest_risk = 0
@@ -53,8 +56,7 @@ def calculate_reachable_points_weighted(
                 if min_step_array[y, x] <= local_step_offset:
                     highest_risk = max(highest_risk, risk_array[y, x])
             weight = (1 - highest_risk) * local_weight
-            reachable_points[local_base_state.position_y, local_base_state.position_x] = \
-                max(weight, reachable_points[local_base_state.position_y, local_base_state.position_x])
+            reachable_points[local_base_state.position_y, local_base_state.position_x] += weight
 
             for action in PlayerAction:
                 state_copy = local_base_state.copy()

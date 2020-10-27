@@ -84,7 +84,7 @@ class MostReachablePointsWeightedPlayer(BasePlayer):
         action = max(action_rating, key=action_rating.get)
 
         # add weighted points to viewer
-        slice_viewer.add_data("weighted_points", action_weight_mapping[action])
+        slice_viewer.add_data("weighted_points", action_weight_mapping[action], normalize=True)
 
         # apply action to local model
         self.playerState.do_action(action)
@@ -103,5 +103,5 @@ class MostReachablePointsWeightedPlayer(BasePlayer):
         player_state.do_action(player_action)
         player_state = player_state.do_move()
         full_range_result = \
-            reachable_points.calculate_reachable_points_weighted(player_state, 1, self.board, probabilities, min_steps, 1)
+            reachable_points.calculate_reachable_points_weighted(player_state, 1, self.board, probabilities, min_steps, 10000)
         return full_range_result
