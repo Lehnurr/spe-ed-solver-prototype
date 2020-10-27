@@ -1,4 +1,3 @@
-from config import LOG_PATH
 from game_connection.BaseConnector import BaseConnector
 from simulation.LocalGameService import LocalGameService
 import json
