@@ -83,6 +83,11 @@ class RiskClass:
                     quantity += self.pattern.value[2]
 
             self.__risk = weighted_sum / quantity
+
+            # if the pattern is 'Surrounded' decrease the risk, because it would be the same as the neighbors risk
+            if self.pattern == RiskPattern.Surrounded:
+                self.__risk *= 0.99
+
             return self.__risk
         else:
             return self.__center_risk
@@ -96,9 +101,9 @@ class RiskClass:
 class RiskPattern(Enum):
     # (Pattern, number_of_low_neighbors, weighting of the high values)
     Surrounded = ("HHHH", 0, 1)
-    DeadEnd = ("HHHL", 1, 2)
+    DeadEnd = ("HHHL", 1, 1.5)
     Corner = ("HHLL", 2, 1.5)
-    Lane = ("HLHL", 2, 1.2)
+    Lane = ("HLHL", 2, 1)
     Obstacle = ("HLLL", 3, 1)
     Empty = ("LLLL", 4, 0)
 
@@ -113,6 +118,9 @@ class RiskPattern(Enum):
         ]
 
         low_limit = max(neighbor_differences, key=lambda difference_tuple: difference_tuple[1])
+
+        if low_limit[0] == 1:
+            return RiskPattern.Surrounded
 
         actual_pattern = ''.join(['H' if neighbor > low_limit[0] else 'L' for neighbor in neighbors_risk_clockwise])
         for pattern in RiskPattern:
