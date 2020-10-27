@@ -1,3 +1,4 @@
+from analysis.area_detection.safe_and_risk_area_combination import get_risk_evaluated_safe_areas
 from players.BasePlayer import BasePlayer
 from game_data.player.PlayerAction import PlayerAction
 from analysis.full_range import no_risk_full_range
@@ -55,14 +56,12 @@ class MostReachablePointsFullRangePlayer(BasePlayer):
         slice_viewer.add_data("enemy_min_steps", enemy_min_steps, normalize=True)
 
         # add safe_area sizes to viewer
-        safe_areas, safe_area_labels = safe_area_detection.detect_safe_areas(np.array(self.board.cells))
+        safe_areas, safe_area_labels = get_risk_evaluated_safe_areas(self.board)
         safe_area_sizes = np.zeros(safe_area_labels.shape)
-        for y in range(safe_area_labels.shape[0]):
-            for x in range(safe_area_labels.shape[1]):
-                safe_area_idx = safe_area_labels[y, x]
-                if safe_area_idx >= 0:
-                    safe_area = safe_areas[safe_area_idx]
-                    safe_area_sizes[y, x] = len(safe_area.points)
+        for area in safe_areas:
+            for point in area.points:
+                safe_area_sizes[point[1], point[0]] = area.risk
+
         slice_viewer.add_data("safe_area_sizes", safe_area_sizes, normalize=False)
 
         # add risk_area to viewer
