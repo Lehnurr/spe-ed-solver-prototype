@@ -95,10 +95,10 @@ class RiskClass:
 
 class RiskPattern(Enum):
     # (Pattern, number_of_low_neighbors, weighting of the high values)
-    Surrounded = ("HHHH", 0, 2.5)
-    DeadEnd = ("HHHL", 1, 3)
-    Corner = ("HHLL", 2, 2)
-    Lane = ("HLHL", 2, 1.5)
+    Surrounded = ("HHHH", 0, 1)
+    DeadEnd = ("HHHL", 1, 2)
+    Corner = ("HHLL", 2, 1.5)
+    Lane = ("HLHL", 2, 1.2)
     Obstacle = ("HLLL", 3, 1)
     Empty = ("LLLL", 4, 0)
 
