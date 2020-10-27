@@ -50,7 +50,7 @@ class MostReachablePointsWeightedPlayer(BasePlayer):
 
         # calculate enemy prediction
         enemy_probabilities, enemy_min_steps = \
-            probability_based_prediction.calculate_probabilities_for_players(self.board, enemy_player_states, depth=7)
+            probability_based_prediction.calculate_probabilities_for_players(self.board, enemy_player_states, depth=6)
 
         # add enemy prediction to viewer
         slice_viewer.add_data("enemy_probability", enemy_probabilities, normalize=False)

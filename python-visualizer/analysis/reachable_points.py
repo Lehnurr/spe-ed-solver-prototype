@@ -53,8 +53,11 @@ def calculate_reachable_points_weighted(
         if local_base_state.verify_move(board):
             highest_risk = 0
             for x, y in local_base_state.steps_to_this_point:
-                if min_step_array[y, x] <= local_step_offset:
-                    highest_risk = max(highest_risk, risk_array[y, x])
+                highest_risk = max(highest_risk, risk_array[y, x])
+                # invert risk when own player reaches point first
+                # inverted risk as reward for cutting of other players
+                if min_step_array[y, x] > local_step_offset:
+                    highest_risk = -highest_risk
             weight = (1 - highest_risk) * local_weight
             reachable_points[local_base_state.position_y, local_base_state.position_x] += weight
 
