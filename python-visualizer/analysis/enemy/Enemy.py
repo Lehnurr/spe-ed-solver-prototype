@@ -25,7 +25,7 @@ class Enemy(Player):
     def recalculate_aggressiveness(self, enemies_states):
         pass
         # recalculate_aggressiveness:
-        # - speed-behavior (avg, min, max) & Number of passed cells (incl. & escl. jumped over cells)
+        # - speed-behavior (avg, min, max) & Number of passed cells (incl. & excl. jumped over cells)
         # - radius of the passed cells / span of the passed cells
 
         # - airline to the nearest player (avg, min, max, differences for all rounds)
