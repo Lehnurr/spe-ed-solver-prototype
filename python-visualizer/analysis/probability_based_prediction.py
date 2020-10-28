@@ -12,7 +12,8 @@ __INIT_VALUE_PLAYER_STEPS = 1000
 def calculate_probabilities_for_players(
         board: Board,
         player_states: [PlayerState],
-        depth: int) -> Tuple[np.ndarray, np.ndarray]:
+        depth: int,
+        probability_cutoff: float = 0) -> Tuple[np.ndarray, np.ndarray]:
     """
     Returns tuple of numpy arrays:
         - probability of reaching the given cells in the [depth] next steps
@@ -23,7 +24,8 @@ def calculate_probabilities_for_players(
     min_player_steps = np.ones((board.height, board.width)) * __INIT_VALUE_PLAYER_STEPS
 
     for player_state in player_states:
-        local_probabilities, local_min_player_steps = calculate_probabilities_for_player(board, player_state, depth)
+        local_probabilities, local_min_player_steps = \
+            calculate_probabilities_for_player(board, player_state, depth=depth, probability_cutoff=probability_cutoff)
         probabilities = np.maximum(probabilities, local_probabilities)
         min_player_steps = np.minimum(min_player_steps, local_min_player_steps)
 
@@ -39,7 +41,9 @@ def calculate_probabilities_for_player(
         board: Board,
         player_state: PlayerState,
         depth: int,
-        step_offset: int = 1) -> Tuple[np.ndarray, np.ndarray]:
+        step_offset: int = 1,
+        probability_cutoff: float = 0,
+        global_probability_factor: float = 1.) -> Tuple[np.ndarray, np.ndarray]:
     """
     Returns tuple of numpy arrays:
         - probability of reaching the given cells in the [depth] next steps
@@ -62,7 +66,7 @@ def calculate_probabilities_for_player(
 
     possible_action_count = len(valid_player_state_tuples)
     if possible_action_count > 0:
-        local_probability_factor = 1 / possible_action_count
+        local_probability_factor = (1 / possible_action_count) * global_probability_factor
 
         for new_player_state, next_player_state in valid_player_state_tuples:
 
@@ -72,10 +76,15 @@ def calculate_probabilities_for_player(
                     probabilities[cell_y, cell_x] += local_probability_factor
                     min_player_steps[cell_y, cell_x] = step_offset
 
-            if depth > 1:
+            # print(f"{local_probability_factor}\t{probability_cutoff}")
+            if depth > 1 and local_probability_factor > probability_cutoff:
                 recursion_probabilities, recursion_min_player_steps = \
-                    calculate_probabilities_for_player(board, next_player_state, depth - 1, step_offset + 1)
-                probabilities += recursion_probabilities * local_probability_factor
+                    calculate_probabilities_for_player(board, next_player_state,
+                                                       depth=depth - 1,
+                                                       step_offset=step_offset + 1,
+                                                       probability_cutoff=probability_cutoff,
+                                                       global_probability_factor=local_probability_factor)
+                probabilities += recursion_probabilities
                 min_player_steps = np.minimum(min_player_steps, recursion_min_player_steps)
 
     return probabilities, min_player_steps

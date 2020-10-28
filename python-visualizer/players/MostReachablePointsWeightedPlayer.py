@@ -50,7 +50,8 @@ class MostReachablePointsWeightedPlayer(BasePlayer):
 
         # calculate enemy prediction
         enemy_probabilities, enemy_min_steps = \
-            probability_based_prediction.calculate_probabilities_for_players(self.board, enemy_player_states, depth=6)
+            probability_based_prediction.calculate_probabilities_for_players(self.board, enemy_player_states,
+                                                                             depth=15, probability_cutoff=0.0001)
 
         # add enemy prediction to viewer
         slice_viewer.add_data("enemy_probability", enemy_probabilities, normalize=False)
@@ -103,5 +104,5 @@ class MostReachablePointsWeightedPlayer(BasePlayer):
         player_state.do_action(player_action)
         player_state = player_state.do_move()
         full_range_result = \
-            reachable_points.calculate_reachable_points_weighted(player_state, 1, self.board, probabilities, min_steps, 10000)
+            reachable_points.calculate_reachable_points_weighted(player_state, 1, self.board, probabilities, min_steps, 25000)
         return full_range_result
