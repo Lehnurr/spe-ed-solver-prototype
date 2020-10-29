@@ -46,7 +46,11 @@ def calculate_reachable_points_weighted(
         if len(queue) == 0:
             break
 
-        local_step_offset, local_weight, local_base_state = queue.pop(random.randrange(len(queue)))
+        random_idx = random.randrange(len(queue))
+        local_step_offset, local_weight, local_base_state = queue[random_idx]
+        popped_element = queue.pop()
+        if random_idx < len(queue):
+            queue[random_idx] = popped_element
 
         calculations += 1
 
