@@ -104,5 +104,5 @@ class MostReachablePointsWeightedPlayer(BasePlayer):
         player_state.do_action(player_action)
         player_state = player_state.do_move()
         full_range_result = \
-            reachable_points.calculate_reachable_points_weighted(player_state, 1, self.board, probabilities, min_steps, 25000)
+            reachable_points.calculate_reachable_points_weighted(player_state, 1, self.board, probabilities, min_steps, 50000)
         return full_range_result

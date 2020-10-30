@@ -2,7 +2,7 @@ import time
 from game_data.game.Board import Board
 from game_data.player.PlayerState import PlayerState, PlayerAction
 import numpy as np
-import random
+from collections import deque
 
 
 def calculate_reachable_points(initial_player_state: PlayerState, board: Board, timeout: float = 0.0) -> np.ndarray:
@@ -37,7 +37,8 @@ def calculate_reachable_points_weighted(
 
     reachable_points = np.zeros((board.height, board.width))
     initial_weight = 1
-    queue = [(initial_step_offset, initial_weight, initial_player_state)]
+    queue = deque()
+    queue.append((initial_step_offset, initial_weight, initial_player_state))
 
     calculations = 0
 
@@ -46,11 +47,7 @@ def calculate_reachable_points_weighted(
         if len(queue) == 0:
             break
 
-        random_idx = random.randrange(len(queue))
-        local_step_offset, local_weight, local_base_state = queue[random_idx]
-        popped_element = queue.pop()
-        if random_idx < len(queue):
-            queue[random_idx] = popped_element
+        local_step_offset, local_weight, local_base_state = queue.popleft()
 
         calculations += 1
 
