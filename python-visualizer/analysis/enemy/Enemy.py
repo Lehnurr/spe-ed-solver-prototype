@@ -1,3 +1,6 @@
+from math import sqrt
+from statistics import median
+
 from game_data.player.Player import Player
 from game_data.player.PlayerAction import PlayerAction
 from game_data.player.PlayerState import PlayerState, PlayerDirection
@@ -11,9 +14,12 @@ class Enemy(Player):
         self.avg_speed = speed
         self.walked_cells = 1
         self.jumped_cells = 1
-        self.max_radius = 0.5
-        self.gradients_per_round = [(x_position, y_position)]
-        # TODO: Add calculation for gradient differences and overall-time Gradient
+        self.radius = 0.5
+        self.center_cell_per_round = [(x_position, y_position)]
+        self.median_per_round = [(x_position, y_position)]
+        self.avg_distance_to_median = 0
+
+        # TODO: add center cells diferences -> if this difference is too large, break here for calculating the median
 
     def update(self, step_info):
         # compute last action
@@ -42,7 +48,35 @@ class Enemy(Player):
         self.walked_cells += last_walked_cells
         self.jumped_cells += current_speed - last_walked_cells
 
-        # TODO: Recalculate the radius of the passed cells
+        # get all passed positions
+        all_positions = self.current_state.all_steps.keys()
+
+        # Calculate the new Center-Cell
+        # This is the center of a player-rectangle (limited by the extreme-points in each direction)
+        top = min(all_positions, key=lambda p: p[1])[1]
+        left = min(all_positions, key=lambda p: p[0])[0]
+        right = max(all_positions, key=lambda p: p[0])[0]
+        bottom = max(all_positions, key=lambda p: p[1])[1]
+        center_x = (top + bottom) / 2
+        center_y = (left + right) / 2
+        self.center_cell_per_round.append((center_x, center_y))
+
+        # Recalculate the radius of the passed cells
+        # This is the distance from the center to the top-left-player-rectangle-corner
+        self.radius = sqrt((left - center_x)**2 + (top - center_y)**2)
+
+        # Calculate the new median
+        median_x = median(pos[0] for pos in all_positions)
+        median_y = median(pos[1] for pos in all_positions)
+        self.median_per_round.append((median_x, median_y))
+        # TODO: dont use all_positions; only back to the round where the center cell difference is not too high
+
+        # Recalculate the average distance to the median
+        x_pos = self.current_state.position_x
+        y_pos = self.current_state.position_y
+        median_distance = sqrt((median_x - x_pos)**2 + (median_y - y_pos)**2)
+        old_avg_distance = self.avg_distance_to_median
+        self.avg_distance_to_median = (old_avg_distance * (number_of_rounds - 1) + median_distance) / number_of_rounds
 
     def recalculate_aggressiveness(self, enemies_states):
         pass
