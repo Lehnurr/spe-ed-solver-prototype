@@ -14,7 +14,37 @@ def count_safe_areas(input_array: np.ndarray) -> int:
     return label_count
 
 
-def determine_cutting_values(player_state: PlayerState, board: Board, depth: int = 1) -> Dict[PlayerAction, float]:
+def determine_future_cutting_values(
+        player_state: PlayerState,
+        board: Board,
+        search_length: int,
+        base_label_count: int):
+
+    x_pos, y_pos = player_state.position_x, player_state.position_y
+    speed = player_state.speed
+    x_speed_factor, y_speed_factor = player_state.direction.to_direction_tuple()
+
+    working_array = np.array(board.cells)
+
+    for step_idx in range(search_length):
+        for cell_step in range(speed):
+            x_pos += x_speed_factor
+            y_pos += y_speed_factor
+            if board.point_is_available(x_pos, y_pos):
+                working_array[y_pos, x_pos] = 1
+            else:
+                return 0.
+        if count_safe_areas(working_array) > base_label_count:
+            return 1 - ((step_idx + 1) / search_length)
+        speed = max(1, speed - 1)
+
+    return 0.
+
+
+def determine_cutting_values(
+        player_state: PlayerState,
+        board: Board,
+        search_length: int = 1) -> Dict[PlayerAction, float]:
 
     original_label_count = count_safe_areas(np.array(board.cells))
 
@@ -34,13 +64,10 @@ def determine_cutting_values(player_state: PlayerState, board: Board, depth: int
 
             if count_safe_areas(adapted_array) > original_label_count:
                 local_cutting_value = 1.
+
             else:
-                if depth > 1:
-                    recursion_result = determine_cutting_values(local_next_state, board, depth - 1)
-                    recursion_cutting_value = min(recursion_result.values())
-                    local_cutting_value = recursion_cutting_value / 2
-                else:
-                    local_cutting_value = 0.
+                local_cutting_value = \
+                    determine_future_cutting_values(player_state, board, search_length, original_label_count)
 
         else:
             local_cutting_value = 1.

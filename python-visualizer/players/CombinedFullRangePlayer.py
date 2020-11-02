@@ -18,7 +18,7 @@ class CombinedFullRangePlayer(BasePlayer):
 
         self.PROBABILITY_WEIGHT = 1
         self.REACHABLE_POINT_WEIGHT = 1
-        self.DESTRUCTION_WEIGHT = 1
+        self.DESTRUCTION_WEIGHT = 0.2
 
         self.roundCounter = 0
         self.board = None
@@ -101,7 +101,7 @@ class CombinedFullRangePlayer(BasePlayer):
                             for player_action, paths in full_range_results.items()}
 
         # calculate action distribution for full range results
-        cutting_distribution = safe_area_cutting_detection.determine_cutting_values(self.playerState, self.board, 3)
+        cutting_distribution = safe_area_cutting_detection.determine_cutting_values(self.playerState, self.board, 10)
         destruction_distribution = {action: 1 - cutting_value for action, cutting_value in cutting_distribution.items()}
 
         # calculate weighted evaluation for each possible action
@@ -110,7 +110,8 @@ class CombinedFullRangePlayer(BasePlayer):
         print(f"\t\t\tdestruction:\t{destruction_distribution}")
         weighted_action_evaluation = {action:
                                       next_action_success_probability[action] * self.PROBABILITY_WEIGHT +
-                                      reachable_points[action] * self.REACHABLE_POINT_WEIGHT
+                                      reachable_points[action] * self.REACHABLE_POINT_WEIGHT +
+                                      destruction_distribution[action] * self.DESTRUCTION_WEIGHT
                                       for action in PlayerAction}
         print(f"\t\t\tevaluation:\t\t{weighted_action_evaluation}")
 

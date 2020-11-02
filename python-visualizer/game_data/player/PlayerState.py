@@ -22,6 +22,16 @@ class PlayerDirection(Enum):
                 new_value = PlayerDirection.UP.value
         return PlayerDirection(new_value)
 
+    def to_direction_tuple(self):
+        if self == PlayerDirection.UP:
+            return 0, 1
+        if self == PlayerDirection.DOWN:
+            return 0, -1
+        if self == PlayerDirection.LEFT:
+            return -1, 0
+        if self == PlayerDirection.RIGHT:
+            return 1, 0
+
 
 class PlayerState:
     def __init__(self, direction: PlayerDirection, speed: int, x_position: int, y_position: int, game_round: int = 1):
