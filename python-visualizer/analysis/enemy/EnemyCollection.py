@@ -17,7 +17,10 @@ class EnemyCollection:
                                                      PlayerDirection[player_data["direction"].upper()],
                                                      player_data["speed"],
                                                      player_data["x"],
-                                                     player_data["y"])
+                                                     player_data["y"],
+                                                     step_info["width"],
+                                                     step_info["height"]
+                                                     )
                                     ).update(player_data)
 
         # recalculate_aggressiveness for all enemies

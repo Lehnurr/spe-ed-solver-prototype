@@ -5,10 +5,20 @@ from game_data.player.Player import Player
 from game_data.player.PlayerAction import PlayerAction
 from game_data.player.PlayerState import PlayerState, PlayerDirection
 
+# The Distance (relative to the board diagonal) of the summed up center-cell-differences,
+# which signals to the median calculation that the value is too far away and does not need to be evaluated
+MAX_CENTER_CELL_DIFFERENCE = 1 / 3
+
 
 class Enemy(Player):
-    def __init__(self, player_id: int, direction: PlayerDirection, speed: int, x_position: int, y_position: int):
+    def __init__(self, player_id: int, direction: PlayerDirection, speed: int, x_position: int, y_position: int,
+                 board_width: int, board_height: int):
         super().__init__(player_id, PlayerState(direction, speed, x_position, y_position))
+
+        self.board_width = board_width
+        self.board_height = board_height
+
+        # Properties for the analytic evaluation of opponents' behavior
         self.min_speed = speed
         self.max_speed = speed
         self.avg_speed = speed
@@ -42,7 +52,7 @@ class Enemy(Player):
         number_of_rounds = self.current_state.game_round
         self.avg_speed = (self.avg_speed * number_of_rounds + current_speed) / (number_of_rounds + 1)
 
-        # Recalculate the Number of passed cells (incl. & excl. jumped over cells)
+        # Recalculate the Number of passed cells (walked & jumped over cells)
         last_walked_cells = len(self.current_state.steps_to_this_point)
         self.walked_cells += last_walked_cells
         self.jumped_cells += current_speed - last_walked_cells
@@ -68,18 +78,38 @@ class Enemy(Player):
 
         # Recalculate the radius of the passed cells
         # This is the distance from the center to the top-left-player-rectangle-corner
-        self.radius = sqrt((left - center_x)**2 + (top - center_y)**2)
+        self.radius = sqrt((left - center_x) ** 2 + (top - center_y) ** 2)
 
         # Calculate the new median
-        median_x = median(pos[0] for pos in all_positions)
-        median_y = median(pos[1] for pos in all_positions)
+        # ignore old positions that are outliers in the current range (when the center-cell-difference is too high)
+        median_positions = all_positions
+        total_pos_difference = (0, 0)
+        max_difference = sqrt(self.board_width ** 2 + self.board_height ** 2) * MAX_CENTER_CELL_DIFFERENCE
+        limitation = len(all_positions)
+        for i in range(1, len(self.center_cell_differences) - 1):
+            total_pos_difference[0] += self.center_cell_differences[-i][0]
+            total_pos_difference[1] += self.center_cell_differences[-i][1]
+
+            total_difference = sqrt(total_pos_difference[0] ** 2 + total_pos_difference[1] ** 2)
+
+            if total_difference < max_difference:
+                limitation = len(all_positions)
+            elif i < limitation:
+                # The max_difference exceeded with this step
+                limitation = i
+            elif i == limitation + 2:
+                # if the max_difference exceeded for 3 rounds in a row, break the median_positions
+                median_positions = all_positions[-limitation:]
+                break
+
+        median_x = median(pos[0] for pos in median_positions)
+        median_y = median(pos[1] for pos in median_positions)
         self.median_per_round.append((median_x, median_y))
-        # TODO: dont use all_positions; only back to the round where the center cell difference is not too high
 
         # Recalculate the average distance to the median
         x_pos = self.current_state.position_x
         y_pos = self.current_state.position_y
-        median_distance = sqrt((median_x - x_pos)**2 + (median_y - y_pos)**2)
+        median_distance = sqrt((median_x - x_pos) ** 2 + (median_y - y_pos) ** 2)
         old_avg_distance = self.avg_distance_to_median
         self.avg_distance_to_median = (old_avg_distance * (number_of_rounds - 1) + median_distance) / number_of_rounds
 
