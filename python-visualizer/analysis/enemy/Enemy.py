@@ -16,10 +16,9 @@ class Enemy(Player):
         self.jumped_cells = 1
         self.radius = 0.5
         self.center_cell_per_round = [(x_position, y_position)]
+        self.center_cell_differences = []
         self.median_per_round = [(x_position, y_position)]
         self.avg_distance_to_median = 0
-
-        # TODO: add center cells diferences -> if this difference is too large, break here for calculating the median
 
     def update(self, step_info):
         # compute last action
@@ -60,6 +59,12 @@ class Enemy(Player):
         center_x = (top + bottom) / 2
         center_y = (left + right) / 2
         self.center_cell_per_round.append((center_x, center_y))
+
+        # Calculate the new Center-Cell-Difference
+        # for this operation at least 2 calculated center cells are required (this is always the case here)
+        x_difference = self.center_cell_per_round[-2][0] - center_x
+        y_difference = self.center_cell_per_round[-2][1] - center_y
+        self.center_cell_differences.append((x_difference, y_difference))
 
         # Recalculate the radius of the passed cells
         # This is the distance from the center to the top-left-player-rectangle-corner
