@@ -146,15 +146,11 @@ class Enemy(Player):
             possible_collision_count = 0
             collided = False
             for possible_state in my_possible_states:
-                state_is_possible_collision = False
                 for position in possible_state.steps_to_this_point:
-                    if position not in possible_enemy_steps:
-                        continue
-                    if not state_is_possible_collision:
+                    if position in possible_enemy_steps:
                         possible_collision_count += 1
-                        state_is_possible_collision = True
-                    if position[0] == self.current_state.position_x and position[1] == self.current_state.position_y:
-                        collided = True
+                        collided |= possible_state.position_x == self.current_state.position_x \
+                                    and possible_state.position_y == self.current_state.position_y
                         break
 
             # check what happened actual
