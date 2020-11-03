@@ -1,6 +1,9 @@
 from math import sqrt
 from statistics import median
+from typing import List
 
+from analysis.full_range.no_risk_full_range import calculate_ranges_for_player as full_range
+from game_data.game.Board import Board
 from game_data.player.Player import Player
 from game_data.player.PlayerAction import PlayerAction
 from game_data.player.PlayerState import PlayerState, PlayerDirection
@@ -29,6 +32,8 @@ class Enemy(Player):
         self.center_cell_differences = []
         self.median_per_round = [(x_position, y_position)]
         self.avg_distance_to_median = 0
+        self.prevent_potential_collisions = 0
+        self.taken_potential_collisions = 0
 
     def update(self, step_info):
         # compute last action
@@ -113,14 +118,31 @@ class Enemy(Player):
         old_avg_distance = self.avg_distance_to_median
         self.avg_distance_to_median = (old_avg_distance * (number_of_rounds - 1) + median_distance) / number_of_rounds
 
-    def recalculate_aggressiveness(self, enemies_states):
+    def recalculate_aggressiveness(self, enemies_states: List[PlayerState], last_round_board: Board):
         pass
-        # TODO: recalculate_aggressiveness:
-
-        # - airline to the nearest player (avg, min, max, differences for all rounds)
+        # TODO: Calculate airline to the nearest player (avg, min, max, differences for all rounds)
         #    also consider a weighted air line (to estimate the distance in rounds)
-        # - Number of taken / prevent potential collisions
-        #   collision means that in at least one case at least one player would die in the next x rounds (default x = 2)
 
-        # - Maybe evaluate movement in risk areas
+        # Calculate Number of taken / prevent potential collisions
+        # if the action prevent the collision, increase prevent_potential_collisions
+        # if the action took the collision and it was possible to prevent, increase taken_potential_collisions
+        if last_round_board:
+            possible_enemy_steps = [position
+                                    for enemy in enemies_states
+                                    for directions in full_range(last_round_board, enemy.previous[-1], 1).values()
+                                    for speeds in directions.values()
+                                    for state in speeds.values()
+                                    for position in state.steps_to_this_point]
+
+            full_range_result = full_range(last_round_board, self.current_state.previous[-1], 1)
+            my_possible_states = [state
+                                  for directions in full_range_result.values()
+                                  for speeds in directions.values()
+                                  for state in speeds.values()]
+
+        # TODO: Consider looking more than 1 round in the future to detect potential collisions
+
+        # TODO: - Maybe evaluate movement in risk areas
         #   (if they often move in high-risk areas, they are willing to take a risk, or stupid)
+
+        # TODO: recalculate a combined aggressiveness value

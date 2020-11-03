@@ -1,4 +1,5 @@
 from copy import deepcopy
+from typing import List
 
 
 class Board:
@@ -7,6 +8,12 @@ class Board:
         self.height = height
         self.cell_count = self.width * self.height
         self.cells = [[0 for x in range(width)] for y in range(height)]
+
+    @classmethod
+    def from_cells(cls, cells: List[List[int]]):
+        board = cls(len(cells[0]), len(cells))
+        board.cells = cells
+        return board
 
     def __getitem__(self, row_index):
         return self.cells[row_index]
