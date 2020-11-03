@@ -22,7 +22,7 @@ def get_cutting_proportion(original_labels: np.ndarray, location: Tuple[int, int
     current_label = original_labels[location[1], location[0]]
     updated_labels_masked = np.copy(updated_labels)
     updated_labels_masked[original_labels != current_label] = 0
-    bins = list(np.bincount(updated_labels_masked))
+    bins = list(np.bincount(updated_labels_masked.flatten()))
     bins[0] = 0
     bins = [single_bin for single_bin in bins if single_bin > 0]
     cutting_proportion = min(bins) / sum(bins)
