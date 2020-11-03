@@ -124,9 +124,11 @@ class Enemy(Player):
         #    also consider a weighted air line (to estimate the distance in rounds)
 
         # Calculate Number of taken / prevent potential collisions
+        # collision means a crash of min 2 players because of their actions in the same round
         # if the action prevent the collision, increase prevent_potential_collisions
         # if the action took the collision and it was possible to prevent, increase taken_potential_collisions
         if last_round_board:
+            # TODO: Consider looking more than 1 round in the future to detect potential collisions
             possible_enemy_steps = [position
                                     for enemy in enemies_states
                                     for directions in full_range(last_round_board, enemy.previous[-1], 1).values()
@@ -140,7 +142,26 @@ class Enemy(Player):
                                   for speeds in directions.values()
                                   for state in speeds.values()]
 
-        # TODO: Consider looking more than 1 round in the future to detect potential collisions
+            # check if collisions where possible
+            possible_collision_count = 0
+            collided = False
+            for possible_state in my_possible_states:
+                state_is_possible_collision = False
+                for position in possible_state.steps_to_this_point:
+                    if position not in possible_enemy_steps:
+                        continue
+                    if not state_is_possible_collision:
+                        possible_collision_count += 1
+                        state_is_possible_collision = True
+                    if position[0] == self.current_state.position_x and position[1] == self.current_state.position_y:
+                        collided = True
+                        break
+
+            # check what happened actual
+            if collided and possible_collision_count < len(my_possible_states):
+                self.taken_potential_collisions += 1
+            elif not collided and possible_collision_count > 0:
+                self.prevent_potential_collisions += 1
 
         # TODO: - Maybe evaluate movement in risk areas
         #   (if they often move in high-risk areas, they are willing to take a risk, or stupid)
