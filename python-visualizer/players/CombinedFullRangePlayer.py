@@ -102,7 +102,7 @@ class CombinedFullRangePlayer(BasePlayer):
 
         # calculate action distribution for full range results
         cutting_distribution, fill_distribution = \
-            cut_fill_area_detection.determine_cutting_and_fill_values(self.playerState, self.board, 10)
+            cut_fill_area_detection.determine_cutting_and_fill_values(self.playerState, self.board, 4)
 
         # calculate weighted evaluation for each possible action
         print(f"\t\t\tprobability:\t{next_action_success_probability}")

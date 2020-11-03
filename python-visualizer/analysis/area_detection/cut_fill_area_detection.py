@@ -47,27 +47,24 @@ def determine_cutting_and_fill_values(
         local_next_state = local_base_state.do_move()
 
         fill_value = 0.
-        cutting_value = 0.
+        cutting_value = 1.
 
         if local_next_state.verify_move(board):
 
             adapted_array = np.array(board.cells)
 
             for x, y in local_next_state.steps_to_this_point:
-                adapted_array[y, x] = 1
+                adapted_array[y, x] = 1.
 
             adapted_labels = get_safe_areas_labels(adapted_array)
             adapted_labels_count = get_safe_areas_label_count(adapted_labels)
 
             if adapted_labels_count > original_label_count:
-                cutting_value = 1 - \
-                                (2. * get_cutting_proportion(original_labels,
-                                                             (local_next_state.position_x, local_next_state.position_y),
-                                                             adapted_labels))
+                cutting_value = 0.
 
             else:
-                x, y = local_next_state.position_x, local_next_state.position_y
-                x_direction, y_direction = local_next_state.direction.to_direction_tuple()
+                x, y = local_base_state.position_x, local_base_state.position_y
+                x_direction, y_direction = local_base_state.direction.to_direction_tuple()
 
                 for distance_idx in range(search_length):
                     x += x_direction
