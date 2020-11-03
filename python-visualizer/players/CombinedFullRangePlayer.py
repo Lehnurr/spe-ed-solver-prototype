@@ -3,7 +3,7 @@ from players.BasePlayer import BasePlayer
 from game_data.player.PlayerAction import PlayerAction
 from analysis.full_range import no_risk_full_range
 from analysis import probability_based_prediction
-from analysis.area_detection import safe_area_cutting_detection, risk_area_calculation
+from analysis.area_detection import cut_fill_area_detection, risk_area_calculation
 from game_data.player.PlayerState import PlayerState
 from game_data.player.PlayerState import PlayerDirection
 from game_data.game.Board import Board
@@ -17,7 +17,8 @@ class CombinedFullRangePlayer(BasePlayer):
 
         self.PROBABILITY_WEIGHT = 1
         self.REACHABLE_POINT_WEIGHT = 1
-        self.DESTRUCTION_WEIGHT = 0.2
+        self.CUTTING_WEIGHT = 0.5
+        self.FILL_WEIGHT = 0.25
 
         self.roundCounter = 0
         self.board = None
@@ -100,17 +101,19 @@ class CombinedFullRangePlayer(BasePlayer):
                             for player_action, paths in full_range_results.items()}
 
         # calculate action distribution for full range results
-        cutting_distribution = safe_area_cutting_detection.determine_cutting_values(self.playerState, self.board, 10)
-        destruction_distribution = {action: 1 - cutting_value for action, cutting_value in cutting_distribution.items()}
+        cutting_distribution, fill_distribution = \
+            cut_fill_area_detection.determine_cutting_and_fill_values(self.playerState, self.board, 10)
 
         # calculate weighted evaluation for each possible action
         print(f"\t\t\tprobability:\t{next_action_success_probability}")
         print(f"\t\t\treachable:\t\t{reachable_points}")
-        print(f"\t\t\tdestruction:\t{destruction_distribution}")
+        print(f"\t\t\tcutting:\t\t{cutting_distribution}")
+        print(f"\t\t\tfill:\t\t\t{fill_distribution}")
         weighted_action_evaluation = {action:
                                       next_action_success_probability[action] * self.PROBABILITY_WEIGHT +
                                       reachable_points[action] * self.REACHABLE_POINT_WEIGHT +
-                                      destruction_distribution[action] * self.DESTRUCTION_WEIGHT
+                                      cutting_distribution[action] * self.CUTTING_WEIGHT +
+                                      fill_distribution[action] * self.FILL_WEIGHT
                                       for action in PlayerAction}
         print(f"\t\t\tevaluation:\t\t{weighted_action_evaluation}")
 
