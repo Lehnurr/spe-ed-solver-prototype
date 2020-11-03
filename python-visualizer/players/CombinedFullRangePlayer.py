@@ -9,7 +9,6 @@ from game_data.player.PlayerState import PlayerDirection
 from game_data.game.Board import Board
 import numpy as np
 import multiprocessing as mp
-import time
 
 
 class CombinedFullRangePlayer(BasePlayer):
