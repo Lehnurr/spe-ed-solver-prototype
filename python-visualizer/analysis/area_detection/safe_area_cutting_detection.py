@@ -16,6 +16,7 @@ def count_safe_areas(input_array: np.ndarray) -> int:
 
 def determine_future_cutting_values(
         player_state: PlayerState,
+        input_array: np.ndarray,
         board: Board,
         search_length: int,
         base_label_count: int):
@@ -24,7 +25,7 @@ def determine_future_cutting_values(
     speed = player_state.speed
     x_speed_factor, y_speed_factor = player_state.direction.to_direction_tuple()
 
-    working_array = np.array(board.cells)
+    working_array = np.copy(input_array)
 
     for step_idx in range(search_length):
         for cell_step in range(speed):
@@ -66,8 +67,8 @@ def determine_cutting_values(
                 local_cutting_value = 1.
 
             else:
-                local_cutting_value = \
-                    determine_future_cutting_values(player_state, board, search_length, original_label_count)
+                local_cutting_value = determine_future_cutting_values(player_state, adapted_array, board,
+                                                                      search_length, original_label_count)
 
         else:
             local_cutting_value = 1.
