@@ -149,8 +149,7 @@ class Enemy(Player):
                 for position in possible_state.steps_to_this_point:
                     if position in possible_enemy_steps:
                         possible_collision_count += 1
-                        collided |= possible_state.position_x == self.current_state.position_x \
-                                    and possible_state.position_y == self.current_state.position_y
+                        collided |= possible_state.all_steps[-1] == self.current_state.all_steps[-1]
                         break
 
             # check what happened actual
