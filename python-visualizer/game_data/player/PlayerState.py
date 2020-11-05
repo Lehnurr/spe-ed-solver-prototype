@@ -24,9 +24,9 @@ class PlayerDirection(Enum):
 
     def to_direction_tuple(self):
         if self == PlayerDirection.UP:
-            return 0, 1
-        if self == PlayerDirection.DOWN:
             return 0, -1
+        if self == PlayerDirection.DOWN:
+            return 0, 1
         if self == PlayerDirection.LEFT:
             return -1, 0
         if self == PlayerDirection.RIGHT:

@@ -64,13 +64,13 @@ def determine_cutting_and_fill_values(
 
             else:
                 x, y = local_base_state.position_x, local_base_state.position_y
-                x_direction, y_direction = local_base_state.direction.to_direction_tuple()
+                x_direction, y_direction = local_next_state.direction.to_direction_tuple()
 
                 for distance_idx in range(search_length):
                     x += x_direction
                     y += y_direction
                     if not board.point_is_available(x, y):
-                        fill_value = 1 - (distance_idx / search_length)
+                        fill_value = 1 - ((distance_idx - 1) / search_length)
                         break
 
         result_fill_values[action] = fill_value
