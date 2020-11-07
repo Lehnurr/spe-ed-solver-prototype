@@ -136,6 +136,7 @@ class PlayerState:
         copy.all_steps = self.all_steps.copy()
         copy.steps_to_this_point = self.steps_to_this_point.copy()
         copy.optional_risk = self.optional_risk
+        copy.success_probability = self.success_probability
         return copy
 
     def __str__(self):
