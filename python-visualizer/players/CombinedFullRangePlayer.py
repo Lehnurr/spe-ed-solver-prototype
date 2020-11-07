@@ -1,7 +1,7 @@
 from analysis.area_detection.safe_and_risk_area_combination import get_risk_evaluated_safe_areas
 from players.BasePlayer import BasePlayer
 from game_data.player.PlayerAction import PlayerAction
-from analysis.full_range import no_risk_full_range
+from analysis.full_range import enemy_probability_full_range
 from analysis import probability_based_prediction
 from analysis.area_detection import cut_fill_area_detection, risk_area_calculation
 from game_data.player.PlayerState import PlayerState
@@ -15,7 +15,6 @@ class CombinedFullRangePlayer(BasePlayer):
 
     def __init__(self):
 
-        self.PROBABILITY_WEIGHT = 1
         self.REACHABLE_POINT_WEIGHT = 1
         self.CUTTING_WEIGHT = 0.5
         self.FILL_WEIGHT = 0.25
@@ -57,20 +56,6 @@ class CombinedFullRangePlayer(BasePlayer):
         enemy_probabilities, enemy_min_steps = \
             probability_based_prediction.calculate_probabilities_for_players(self.board, enemy_player_states, depth=7)
 
-        # calculate probabilities for next actions
-        next_action_success_probability = {action: 0 for action in PlayerAction}
-        probabilities_in_next_step = np.copy(enemy_probabilities)
-        probabilities_in_next_step[enemy_min_steps != 1] = 0
-        for action in PlayerAction:
-            current_player_state = self.playerState.copy()
-            current_player_state.do_action(action)
-            possible_next_player_state = current_player_state.do_move()
-            if possible_next_player_state.verify_move(self.board):
-                max_enemy_probability = 0
-                for x, y in possible_next_player_state.steps_to_this_point:
-                    max_enemy_probability = max(probabilities_in_next_step[y, x], max_enemy_probability)
-                next_action_success_probability[action] = 1 - max_enemy_probability
-
         # add enemy prediction to viewer
         slice_viewer.add_data("enemy_probability", enemy_probabilities, normalize=False)
         slice_viewer.add_data("enemy_min_steps", enemy_min_steps, normalize=True)
@@ -89,28 +74,29 @@ class CombinedFullRangePlayer(BasePlayer):
 
         # get full range result for each possible action
         player_action_array = [player_action for player_action in PlayerAction]
+        input_array = [(self.playerState, player_action, self.board, enemy_probabilities, enemy_min_steps)
+                       for player_action in player_action_array]
         pool = mp.Pool(mp.cpu_count())
-        path_option_results = pool.map(self.get_full_range_path_options_for_action, player_action_array)
+        path_option_results = pool.starmap(enemy_probability_full_range.calculate_ranges_for_player_action, input_array)
         pool.close()
         full_range_results = {player_action: path_option_results[player_action_array.index(player_action)]
                               for player_action in PlayerAction}
 
         # calculate reachable points for full range results
-        max_reachable_points = max(max([len(paths) for paths in full_range_results.values()]), 1)
-        reachable_points = {player_action: len(paths) / max_reachable_points
-                            for player_action, paths in full_range_results.items()}
+        max_reachable_points_value = \
+            max(max([np.sum(full_range_result) for full_range_result in full_range_results.values()]), 1)
+        reachable_points = {player_action: np.sum(full_range_result) / max_reachable_points_value
+                            for player_action, full_range_result in full_range_results.items()}
 
         # calculate action distribution for full range results
         cutting_distribution, fill_distribution = \
             cut_fill_area_detection.determine_cutting_and_fill_values(self.playerState, self.board, 4)
 
         # calculate weighted evaluation for each possible action
-        print(f"\t\t\tprobability:\t{next_action_success_probability}")
         print(f"\t\t\treachable:\t\t{reachable_points}")
         print(f"\t\t\tcutting:\t\t{cutting_distribution}")
         print(f"\t\t\tfill:\t\t\t{fill_distribution}")
         weighted_action_evaluation = {action:
-                                      next_action_success_probability[action] * self.PROBABILITY_WEIGHT +
                                       reachable_points[action] * self.REACHABLE_POINT_WEIGHT +
                                       cutting_distribution[action] * self.CUTTING_WEIGHT +
                                       fill_distribution[action] * self.FILL_WEIGHT
@@ -120,17 +106,9 @@ class CombinedFullRangePlayer(BasePlayer):
         # chose action based of highest value
         action = max(weighted_action_evaluation, key=weighted_action_evaluation.get)
 
-        # add path options to viewer
-        path_steps_array = np.zeros((step_info["height"], step_info["width"]))
-        path_options = path_option_results[player_action_array.index(action)]
-        for option in path_options:
-            x = option.position_x
-            y = option.position_y
-            current_value = path_steps_array[y, x]
-            new_value = option.game_round - self.roundCounter
-            path_steps_array[y, x] = new_value if current_value == 0 else min(current_value, new_value)
-
-        slice_viewer.add_data("full_range_steps", path_steps_array)
+        # add reachable points to viewer
+        selected_reachable_points = full_range_results[action]
+        slice_viewer.add_data("full_range_probability", selected_reachable_points, normalize=False)
 
         # apply action to local model
         self.playerState.do_action(action)
@@ -139,17 +117,4 @@ class CombinedFullRangePlayer(BasePlayer):
         return action
 
     def get_slice_viewer_attributes(self):
-        return ["full_range_steps", "enemy_probability", "enemy_min_steps", "safe_area_sizes", "risk_evaluation"]
-
-    def get_full_range_path_options_for_action(self, player_action: PlayerAction):
-        player_state = self.playerState.copy()
-        player_state.do_action(player_action)
-        player_state = player_state.do_move()
-        if not player_state.verify_move(self.board):
-            return []
-        full_range_result = no_risk_full_range.calculate_ranges_for_player(self.board, player_state)
-        path_options = [state
-                        for directions in full_range_result.values()
-                        for speeds in directions.values()
-                        for state in speeds.values()]
-        return path_options
+        return ["full_range_probability", "enemy_probability", "enemy_min_steps", "safe_area_sizes", "risk_evaluation"]

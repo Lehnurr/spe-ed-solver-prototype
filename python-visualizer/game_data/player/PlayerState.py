@@ -48,6 +48,7 @@ class PlayerState:
         self.collided_with_own_line = False
         # This field is optional for algorithms that determine the risk for this step
         self.optional_risk = 0.0
+        self.success_probability = 1.0
 
     def do_action(self, action: PlayerAction):
         if self.action is not None:
