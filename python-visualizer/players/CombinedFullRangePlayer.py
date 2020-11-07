@@ -18,6 +18,7 @@ class CombinedFullRangePlayer(BasePlayer):
         self.REACHABLE_POINT_WEIGHT = 1
         self.CUTTING_WEIGHT = 0.5
         self.FILL_WEIGHT = 0.25
+        self.SLOW_FORCE_WEIGHT = 0.1
 
         self.roundCounter = 0
         self.board = None
@@ -92,14 +93,24 @@ class CombinedFullRangePlayer(BasePlayer):
         cutting_distribution, fill_distribution = \
             cut_fill_area_detection.determine_cutting_and_fill_values(self.playerState, self.board, 4)
 
+        # build slow down force
+        slow_force = {player_action: 0. for player_action in PlayerAction}
+        slow_base_state = self.playerState.copy()
+        slow_base_state.do_action(PlayerAction.SLOW_DOWN)
+        slow_next_state = slow_base_state.do_move()
+        if slow_next_state.verify_move(self.board):
+            slow_force[PlayerAction.SLOW_DOWN] = 1.
+
         # calculate weighted evaluation for each possible action
         print(f"\t\t\treachable:\t\t{reachable_points}")
         print(f"\t\t\tcutting:\t\t{cutting_distribution}")
         print(f"\t\t\tfill:\t\t\t{fill_distribution}")
+        print(f"\t\t\tslow:\t\t\t{slow_force}")
         weighted_action_evaluation = {action:
                                       reachable_points[action] * self.REACHABLE_POINT_WEIGHT +
                                       cutting_distribution[action] * self.CUTTING_WEIGHT +
-                                      fill_distribution[action] * self.FILL_WEIGHT
+                                      fill_distribution[action] * self.FILL_WEIGHT +
+                                      slow_force[action] * self.SLOW_FORCE_WEIGHT
                                       for action in PlayerAction}
         print(f"\t\t\tevaluation:\t\t{weighted_action_evaluation}")
 
