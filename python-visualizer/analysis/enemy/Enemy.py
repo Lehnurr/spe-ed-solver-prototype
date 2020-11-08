@@ -88,14 +88,15 @@ class Enemy(Player):
         # Calculate the new median
         # ignore old positions that are outliers in the current range (when the center-cell-difference is too high)
         median_positions = all_positions
-        total_pos_difference = (0, 0)
+        total_x_difference = 0
+        total_y_difference = 0
         max_difference = sqrt(self.board_width ** 2 + self.board_height ** 2) * MAX_CENTER_CELL_DIFFERENCE
         limitation = len(all_positions)
         for i in range(1, len(self.center_cell_differences) - 1):
-            total_pos_difference[0] += self.center_cell_differences[-i][0]
-            total_pos_difference[1] += self.center_cell_differences[-i][1]
+            total_x_difference += self.center_cell_differences[-i][0]
+            total_y_difference += self.center_cell_differences[-i][1]
 
-            total_difference = sqrt(total_pos_difference[0] ** 2 + total_pos_difference[1] ** 2)
+            total_difference = sqrt(total_x_difference ** 2 + total_y_difference ** 2)
 
             if total_difference < max_difference:
                 limitation = len(all_positions)
@@ -158,7 +159,7 @@ class Enemy(Player):
             elif not collided and possible_collision_count > 0:
                 self.prevent_potential_collisions += 1
 
-        # TODO: - Maybe evaluate movement in risk areas
+        # TODO: Maybe evaluate movement in risk areas
         #   (if they often move in high-risk areas, they are willing to take a risk, or stupid)
 
         # TODO: recalculate a combined aggressiveness value

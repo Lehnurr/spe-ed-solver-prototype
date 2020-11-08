@@ -11,8 +11,9 @@ class EnemyCollection:
         self.cells = None
 
     def update(self, step_info: dict):
+        last_round_board = None
         if self.cells:
-            last_round_board = Board.from_cells(self.cells)
+            Board.from_cells(self.cells)
 
         self.cells = step_info["cells"]
 
@@ -32,7 +33,7 @@ class EnemyCollection:
                                     ).update(player_data)
 
         # recalculate_aggressiveness for all enemies
-        for player in self.players:
+        for player in self.players.values():
             # only for active players and not for your own player
             if player.is_active and player.player_id != step_info["you"]:
                 players_enemies = [v for k, v in decision_relevant_player_states.items() if k != player.player_id]
