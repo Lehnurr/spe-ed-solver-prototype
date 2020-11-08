@@ -16,8 +16,8 @@ class CombinedFullRangePlayer(BasePlayer):
     def __init__(self):
 
         self.REACHABLE_POINT_WEIGHT = 1
-        self.CUTTING_WEIGHT = 0.5
-        self.FILL_WEIGHT = 0.25
+        self.CUTTING_WEIGHT = 0.2
+        self.FILL_WEIGHT = 0.1
         self.SLOW_FORCE_WEIGHT = 0.1
 
         self.roundCounter = 0
