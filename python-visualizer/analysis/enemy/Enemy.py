@@ -34,6 +34,7 @@ class Enemy(Player):
         self.avg_distance_to_median = 0
         self.prevent_potential_collisions = 0
         self.taken_potential_collisions = 0
+        self.aggressiveness = 0
 
     def update(self, step_info):
         # compute last action
@@ -121,15 +122,11 @@ class Enemy(Player):
 
     def recalculate_aggressiveness(self, enemies_states: List[PlayerState], last_round_board: Board):
         pass
-        # TODO: Calculate airline to the nearest player (avg, min, max, differences for all rounds)
-        #    also consider a weighted air line (to estimate the distance in rounds)
-
         # Calculate Number of taken / prevent potential collisions
         # collision means a crash of min 2 players because of their actions in the same round
         # if the action prevent the collision, increase prevent_potential_collisions
         # if the action took the collision and it was possible to prevent, increase taken_potential_collisions
         if last_round_board:
-            # TODO: Consider looking more than 1 round in the future to detect potential collisions
             possible_enemy_steps = [position
                                     for enemy in enemies_states
                                     for directions in full_range(last_round_board, enemy.previous[-1], 1).values()
@@ -159,7 +156,11 @@ class Enemy(Player):
             elif not collided and possible_collision_count > 0:
                 self.prevent_potential_collisions += 1
 
-        # TODO: Maybe evaluate movement in risk areas
-        #   (if they often move in high-risk areas, they are willing to take a risk, or stupid)
+        # Recalculate a combined aggressiveness value
+        possible_collisions = self.prevent_potential_collisions + self.taken_potential_collisions
+        taken_collisions_ratio = 0
+        if possible_collisions > 0:
+            taken_collisions_ratio = self.taken_potential_collisions / possible_collisions
 
-        # TODO: recalculate a combined aggressiveness value
+        radius_ratio = self.radius / (sqrt(self.board_width ** 2 + self.board_height ** 2) / 2)
+        self.aggressiveness = (taken_collisions_ratio * possible_collisions + radius_ratio) / (possible_collisions + 1)
