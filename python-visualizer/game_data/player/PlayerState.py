@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Tuple
 
 from game_data.game.Board import Board
 from game_data.player.PlayerAction import PlayerAction
@@ -128,6 +129,9 @@ class PlayerState:
                 return False
 
         return True
+
+    def get_position_tuple(self) -> Tuple[int, int]:
+        return self.position_x, self.position_y
 
     def copy(self):
         copy = PlayerState(self.direction, self.speed, self.position_x, self.position_y, self.game_round)

@@ -106,7 +106,7 @@ class Enemy(Player):
                 limitation = i
             elif i == limitation + 2:
                 # if the max_difference exceeded for 3 rounds in a row, break the median_positions
-                median_positions = all_positions[-limitation:]
+                median_positions = list(all_positions)[-limitation:]
                 break
 
         median_x = median(pos[0] for pos in median_positions)
