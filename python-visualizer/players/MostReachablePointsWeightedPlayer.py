@@ -2,13 +2,13 @@ from analysis.area_detection.safe_and_risk_area_combination import get_risk_eval
 from players.BasePlayer import BasePlayer
 from game_data.player.PlayerAction import PlayerAction
 from analysis import probability_based_prediction
-from analysis.area_detection import safe_area_detection, risk_area_calculation
+from analysis.area_detection import risk_area_calculation
 from game_data.player.PlayerState import PlayerState
 from game_data.player.PlayerState import PlayerDirection
 from game_data.game.Board import Board
 import numpy as np
 import multiprocessing as mp
-from analysis import reachable_points
+from analysis.fill import reachable_points
 import time
 
 
