@@ -37,19 +37,26 @@ class Enemy(Player):
         self.aggressiveness = 0
 
     def update(self, step_info):
-        # compute last action
-        self.next_action = PlayerAction.CHANGE_NOTHING
-        if step_info["speed"] > self.current_state.speed:
-            self.next_action = PlayerAction.SPEED_UP
-        elif step_info["speed"] < self.current_state.speed:
-            self.next_action = PlayerAction.SLOW_DOWN
-        elif self.current_state.direction.turn(PlayerAction.TURN_LEFT).name.lower() == step_info["direction"]:
-            self.next_action = PlayerAction.TURN_LEFT
-        elif self.current_state.direction.turn(PlayerAction.TURN_RIGHT).name.lower() == step_info["direction"]:
-            self.next_action = PlayerAction.TURN_RIGHT
+        if self.current_state.position_x != step_info["x"] or self.current_state.position_y != step_info["y"]:
+            # compute last action
+            self.next_action = PlayerAction.CHANGE_NOTHING
+            if step_info["speed"] > self.current_state.speed:
+                self.next_action = PlayerAction.SPEED_UP
+            elif step_info["speed"] < self.current_state.speed:
+                self.next_action = PlayerAction.SLOW_DOWN
+            elif self.current_state.direction.turn(PlayerAction.TURN_LEFT).name.lower() == step_info["direction"]:
+                self.next_action = PlayerAction.TURN_LEFT
+            elif self.current_state.direction.turn(PlayerAction.TURN_RIGHT).name.lower() == step_info["direction"]:
+                self.next_action = PlayerAction.TURN_RIGHT
 
-        # do last action
-        self.do_action_and_move()
+            # do last action
+            self.do_action_and_move()
+
+            if self.current_state.position_x < 0 or \
+                    self.current_state.position_y < 0 or \
+                    self.current_state.position_x >= self.board_width or \
+                    self.current_state.position_y >= self.board_height:
+                return
 
         # Recalculate the speed-behavior (min, max, avg)
         current_speed = self.current_state.speed
@@ -74,6 +81,7 @@ class Enemy(Player):
         bottom = max(all_positions, key=lambda p: p[1])[1]
         center_x = (left + right) / 2
         center_y = (top + bottom) / 2
+
         self.center_cell_per_round.append((center_x, center_y))
 
         # Calculate the new Center-Cell-Difference
@@ -111,6 +119,7 @@ class Enemy(Player):
 
         median_x = median(pos[0] for pos in median_positions)
         median_y = median(pos[1] for pos in median_positions)
+
         self.median_per_round.append((median_x, median_y))
 
         # Recalculate the average distance to the median
