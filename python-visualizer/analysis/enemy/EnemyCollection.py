@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from analysis.enemy.Enemy import Enemy
 from game_data.game.Board import Board
@@ -10,8 +10,10 @@ class EnemyCollection:
         self.players: Dict[int: Enemy] = {}
         self.cells = None
 
-    def update(self, step_info: dict):
+    def update(self, step_info: dict) -> List[Tuple[int, int]]:
         last_round_board = None
+        new_occupied_cells = []
+
         if self.cells:
             Board.from_cells(self.cells)
 
@@ -31,6 +33,7 @@ class EnemyCollection:
                                                      step_info["height"]
                                                      )
                                     ).update(player_data)
+            new_occupied_cells += self.players[player_id].current_state.steps_to_this_point
 
         # recalculate_aggressiveness for all enemies
         for player in self.players.values():
@@ -38,3 +41,5 @@ class EnemyCollection:
             if player.is_active and player.player_id != step_info["you"]:
                 players_enemies = [v for k, v in decision_relevant_player_states.items() if k != player.player_id]
                 player.recalculate_aggressiveness(players_enemies, last_round_board)
+
+        return new_occupied_cells
