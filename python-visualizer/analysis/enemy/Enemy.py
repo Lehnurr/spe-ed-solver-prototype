@@ -72,8 +72,8 @@ class Enemy(Player):
         left = min(all_positions, key=lambda p: p[0])[0]
         right = max(all_positions, key=lambda p: p[0])[0]
         bottom = max(all_positions, key=lambda p: p[1])[1]
-        center_x = (top + bottom) / 2
-        center_y = (left + right) / 2
+        center_x = (left + right) / 2
+        center_y = (top + bottom) / 2
         self.center_cell_per_round.append((center_x, center_y))
 
         # Calculate the new Center-Cell-Difference
