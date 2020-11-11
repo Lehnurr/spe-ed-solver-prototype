@@ -32,3 +32,10 @@ def detect_safe_areas(input_array: np.ndarray) -> Tuple[List[SafeArea], np.ndarr
                 result_area_list[idx].points.append((x, y))
 
     return result_area_list, indexes
+
+
+def count_safe_areas(input_array: np.ndarray) -> int:
+    working_array = np.ones(input_array.shape)
+    working_array[input_array != 0] = 0
+    labels = measure.label(working_array, background=0, connectivity=1)
+    return np.max(labels)
