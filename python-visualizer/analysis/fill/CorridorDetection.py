@@ -3,6 +3,7 @@ from analysis.area_detection import safe_area_detection
 import matplotlib.pyplot as plt
 from itertools import product
 import time
+from typing import Tuple
 
 
 class CorridorDetection:
@@ -23,30 +24,32 @@ class CorridorDetection:
         original_area_count = safe_area_detection.count_safe_areas(working_array)
         working_array[1, 1] = 1.
         changed_area_count = safe_area_detection.count_safe_areas(working_array)
+
         return original_area_count != changed_area_count
 
     @staticmethod
-    def __generate_key(input_array: np.ndarray) -> int:
-        input_binary = np.zeros(input_array.shape, dtype=bool)
-        input_binary[input_array != 0] = True
-        key_bytes = np.packbits(input_binary.flatten())
-        key = (key_bytes[0] << 1) + (key_bytes[1] >> 7)
+    def __generate_key(input_array: np.ndarray, x, y) -> int:
+        key = 0
+        for y_off in reversed(range(3)):
+            for x_off in reversed(range(3)):
+                key <<= 1
+                key += input_array[y + y_off, x + x_off]
         return key
 
     def get_corridor_map(self, input_array: np.ndarray) -> np.ndarray:
         height, width = input_array.shape
         padded_array = np.pad(input_array, 1, mode="constant", constant_values=1)
         output_array = np.zeros(input_array.shape)
-        for y, x in product(range(height), range(width)):
-            cut_out_area = padded_array[y:y+3, x:x+3]
-            key = CorridorDetection.__generate_key(cut_out_area)
-            output_array[y, x] = self.corridor_lut[key]
+        for y in range(height):
+            for x in range(width):
+                key = CorridorDetection.__generate_key(padded_array, x, y)
+                output_array[y, x] = self.corridor_lut[key]
         return output_array
 
 
 if __name__ == "__main__":
     cd = CorridorDetection()
-    test_array = np.random.randint(2, size=(200, 200))
+    test_array = np.random.randint(2, size=(10, 20))
     start_time = time.time()
     test_result = cd.get_corridor_map(test_array)
     print(time.time() - start_time)
