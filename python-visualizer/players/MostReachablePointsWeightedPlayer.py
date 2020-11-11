@@ -1,5 +1,4 @@
 from analysis.area_detection.safe_and_risk_area_combination import get_risk_evaluated_safe_areas
-from analysis.enemy.EnemyCollection import EnemyCollection
 from players.BasePlayer import BasePlayer
 from game_data.player.PlayerAction import PlayerAction
 from analysis import probability_based_prediction
@@ -19,10 +18,8 @@ class MostReachablePointsWeightedPlayer(BasePlayer):
         self.roundCounter = 0
         self.board = None
         self.playerState = None
-        self.enemies = EnemyCollection()
 
     def handle_step(self, step_info, slice_viewer):
-        self.enemies.update(step_info)
         self.roundCounter += 1
         own_player = step_info["players"][str(step_info["you"])]
 
@@ -89,17 +86,6 @@ class MostReachablePointsWeightedPlayer(BasePlayer):
         # add weighted points to viewer
         slice_viewer.add_data("weighted_points", action_weight_mapping[action], normalize=True)
 
-        # add enemy center-cell & median to viewer
-        enemy_medians = [[0] * self.board.width for i in range(self.board.height)]
-        enemy_centers = [[0]*self.board.width for i in range(self.board.height)]
-        for enemy in self.enemies.players.values():
-            current_median = enemy.median_per_round[-1]
-            current_center_cell = enemy.center_cell_per_round[-1]
-            enemy_medians[int(current_median[1])][int(current_median[0])] = int(enemy.player_id)
-            enemy_centers[int(current_center_cell[1])][int(current_center_cell[0])] = int(enemy.player_id)
-        slice_viewer.add_data("enemy_medians", enemy_medians, normalize=True)
-        slice_viewer.add_data("enemy_centers", enemy_centers, normalize=True)
-
         # apply action to local model
         self.playerState.do_action(action)
         self.playerState = self.playerState.do_move()
@@ -107,8 +93,7 @@ class MostReachablePointsWeightedPlayer(BasePlayer):
         return action
 
     def get_slice_viewer_attributes(self):
-        return ["weighted_points", "enemy_probability", "enemy_min_steps", "safe_area_sizes", "risk_evaluation",
-                "enemy_medians", "enemy_centers"]
+        return ["weighted_points", "enemy_probability", "enemy_min_steps", "safe_area_sizes", "risk_evaluation"]
 
     def get_weighted_points_for_action(self,
                                        player_action: PlayerAction,
