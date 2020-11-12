@@ -3,7 +3,8 @@ from players.BasePlayer import BasePlayer
 from game_data.player.PlayerAction import PlayerAction
 from analysis.full_range import enemy_probability_full_range
 from analysis import probability_based_prediction
-from analysis.area_detection import cut_fill_area_detection, risk_area_calculation
+from analysis.area_detection import risk_area_calculation
+from analysis.fill import cut_fill_area_detection
 from game_data.player.PlayerState import PlayerState
 from game_data.player.PlayerState import PlayerDirection
 from game_data.game.Board import Board
