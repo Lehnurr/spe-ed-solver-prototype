@@ -1,9 +1,10 @@
 import numpy as np
 from analysis.area_detection import safe_area_detection
 import matplotlib.pyplot as plt
-from itertools import product
 import time
-from typing import Tuple
+
+
+NEIGHBOR_MASK_4 = np.array([[0, 1, 0], [1, 0, 1], [0, 1, 0]])
 
 
 class CorridorDetection:
@@ -13,19 +14,33 @@ class CorridorDetection:
 
     @staticmethod
     def __generate_lut_element(key: int) -> bool:
+
         flat_working_array = np.zeros(9)
         pos = 0
+
         while key > 0:
             if key & 1:
                 flat_working_array[pos] = 1.
             key >>= 1
             pos += 1
+
         working_array = flat_working_array.reshape((3, 3))
+
+        if working_array[1, 1] == 1:
+            return False
+
         original_area_count = safe_area_detection.count_safe_areas(working_array)
         working_array[1, 1] = 1.
         changed_area_count = safe_area_detection.count_safe_areas(working_array)
 
-        return original_area_count != changed_area_count
+        if original_area_count != changed_area_count:
+            return True
+
+        masked_working_array = np.multiply(working_array, NEIGHBOR_MASK_4)
+        if np.count_nonzero(masked_working_array) == 3:
+            return True
+
+        return False
 
     @staticmethod
     def __generate_key(input_array: np.ndarray, x, y) -> int:
