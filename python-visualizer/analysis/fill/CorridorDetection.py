@@ -10,7 +10,7 @@ NEIGHBOR_MASK_4 = np.array([[0, 1, 0], [1, 0, 1], [0, 1, 0]])
 class CorridorDetection:
 
     def __init__(self):
-        self.corridor_lut = [CorridorDetection.__generate_lut_element(key) for key in range(512)]
+        self.__corridor_lut = [CorridorDetection.__generate_lut_element(key) for key in range(512)]
 
     @staticmethod
     def __generate_lut_element(key: int) -> bool:
@@ -52,13 +52,19 @@ class CorridorDetection:
         return key
 
     def get_corridor_map(self, input_array: np.ndarray) -> np.ndarray:
-        height, width = input_array.shape
-        padded_array = np.pad(input_array, 1, mode="constant", constant_values=1)
-        output_array = np.zeros(input_array.shape)
+
+        working_array = input_array.copy()
+        working_array[working_array != 0] = 1.
+
+        height, width = working_array.shape
+        padded_array = np.pad(working_array, 1, mode="constant", constant_values=1)
+        output_array = np.zeros(working_array.shape)
+
         for y in range(height):
             for x in range(width):
                 key = CorridorDetection.__generate_key(padded_array, x, y)
-                output_array[y, x] = self.corridor_lut[key]
+                output_array[y, x] = self.__corridor_lut[key]
+
         return output_array
 
 
