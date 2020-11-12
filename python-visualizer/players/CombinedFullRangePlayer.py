@@ -4,7 +4,7 @@ from game_data.player.PlayerAction import PlayerAction
 from analysis.full_range import enemy_probability_full_range
 from analysis import probability_based_prediction
 from analysis.area_detection import risk_area_calculation
-from analysis.fill import cut_fill_area_detection
+from analysis.fill import basic_cut_fill_area_detection
 from game_data.player.PlayerState import PlayerState
 from game_data.player.PlayerState import PlayerDirection
 from game_data.game.Board import Board
@@ -92,7 +92,7 @@ class CombinedFullRangePlayer(BasePlayer):
 
         # calculate action distribution for full range results
         cutting_distribution, fill_distribution = \
-            cut_fill_area_detection.determine_cutting_and_fill_values(self.playerState, self.board, 4)
+            basic_cut_fill_area_detection.determine_cutting_and_fill_values(self.playerState, self.board, 4)
 
         # build slow down force
         slow_force = {player_action: 0. for player_action in PlayerAction}
