@@ -9,23 +9,16 @@ class Drawable(Enum):
 
 
 class DrawingPatternPoint:
-    def __init__(self):
-        self.x_change = 0
-        self.y_change = 0
-        self.is_obligatory = True
+    def __init__(self, x_change: int, y_change: int, is_obligatory: bool = True):
+        self.x_change = x_change
+        self.y_change = y_change
+        self.is_obligatory = is_obligatory
 
     def copy(self):
-        copy = DrawingPatternPoint()
-        copy.x_change = self.x_change
-        copy.y_change = self.y_change
-        copy.is_obligatory = self.is_obligatory
-        return copy
+        return DrawingPatternPoint(self.x_change, self.y_change, self.is_obligatory)
 
     def copy_invert(self):
-        copy = self.copy()
-        copy.x_change = -copy.x_change
-        copy.y_change = -copy.y_change
-        return copy
+        return DrawingPatternPoint(-self.x_change, -self.y_change, self.is_obligatory)
 
 
 def get_pattern(drawing) -> List[DrawingPatternPoint]:
