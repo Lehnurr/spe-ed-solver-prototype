@@ -28,6 +28,10 @@ def determine_fill_values(
         local_base_state.do_action(action)
         local_next_state = local_base_state.do_move()
 
+        if not local_next_state.verify_move(board):
+            fill_result[action] = 0.
+            continue
+
         adapted_array = np.array(board.cells)
 
         for x, y in local_next_state.steps_to_this_point:

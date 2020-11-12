@@ -71,7 +71,7 @@ class CorridorDetection:
         working_array = input_array.copy()
         working_array[working_array != 0] = 1.
 
-        padded_array = np.pad(working_array, 1, mode="constant", constant_values=1)
+        padded_array = np.pad(working_array, 2, mode="constant", constant_values=1)
         output_array = np.zeros((3, 3))
 
         for y in range(3):

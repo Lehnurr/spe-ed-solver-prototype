@@ -3,6 +3,7 @@ from players.RandomFullRangePlayer import RandomFullRangePlayer
 from players.EnemyProbabilityFullRangePlayer import EnemyProbabilityFullRangePlayer
 from players.MostReachablePointsFullRangePlayer import MostReachablePointsFullRangePlayer
 from players.MostReachablePointsWeightedPlayer import MostReachablePointsWeightedPlayer
+from players.CorridorCombinedFullRangePlayer import CorridorCombinedFullRangePlayer
 from players.CombinedFullRangePlayer import CombinedFullRangePlayer
 from management.PlayerController import PlayerController
 
@@ -30,6 +31,9 @@ def get_player_controllers(selected_player_types, player_count):
 
         if selected_player_type == "CombinedFullRangePlayer":
             current_player_instance = CombinedFullRangePlayer()
+
+        if selected_player_type == "CorridorCombinedFullRangePlayer":
+            current_player_instance = CorridorCombinedFullRangePlayer()
 
         assert(current_player_instance is not None)
         player_instances.append(current_player_instance)
