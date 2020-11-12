@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Tuple, Dict, List
 
+from draw.lol import LOL_PATTERN
 from game_data.player.PlayerAction import PlayerAction
 
 
@@ -21,9 +22,11 @@ class DrawingPatternPoint:
         return DrawingPatternPoint(-self.x_change, -self.y_change, self.is_obligatory)
 
 
-def get_pattern(drawing) -> List[DrawingPatternPoint]:
-    # TODO: load pattern as a copy from file / config
-    pass
+def get_pattern(drawing: Drawable) -> List[DrawingPatternPoint]:
+    if drawing == Drawable.LOL:
+        return LOL_PATTERN.copy()  # TODO: check if deepcopy is needed
+
+    return []
 
 
 def can_draw(pattern, board, playerState, start_index, step):

@@ -1,6 +1,6 @@
 from draw.draw import DrawingPatternPoint
 
-PATTERN = [
+LOL_PATTERN = [
     DrawingPatternPoint(1, 0, True),
     DrawingPatternPoint(1, 0, True),
     DrawingPatternPoint(0, -1, False),
