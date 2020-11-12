@@ -67,6 +67,20 @@ class CorridorDetection:
 
         return output_array
 
+    def get_corridor_sub_map(self, input_array: np.ndarray, sub_pos_x: int, sub_pos_y: int) -> np.ndarray:
+        working_array = input_array.copy()
+        working_array[working_array != 0] = 1.
+
+        padded_array = np.pad(working_array, 1, mode="constant", constant_values=1)
+        output_array = np.zeros((3, 3))
+
+        for y in range(3):
+            for x in range(3):
+                key = CorridorDetection.__generate_key(padded_array, sub_pos_x + x, sub_pos_y + y)
+                output_array[y, x] = self.__corridor_lut[key]
+
+        return output_array
+
 
 if __name__ == "__main__":
     cd = CorridorDetection()

@@ -35,7 +35,15 @@ def detect_safe_areas(input_array: np.ndarray) -> Tuple[List[SafeArea], np.ndarr
 
 
 def count_safe_areas(input_array: np.ndarray) -> int:
+    return count_labels(get_labels(input_array))
+
+
+def get_labels(input_array: np.ndarray) -> np.ndarray:
     working_array = np.ones(input_array.shape)
     working_array[input_array != 0] = 0
     labels = measure.label(working_array, background=0, connectivity=1)
-    return np.max(labels)
+    return labels
+
+
+def count_labels(input_array: np.ndarray) -> int:
+    return np.max(input_array)
