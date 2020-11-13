@@ -30,7 +30,7 @@ class Board:
         return 0 <= x < self.width and 0 <= y < self.height
 
     def point_is_available(self, x: int, y: int) -> bool:
-        return self.point_is_on_board(x, y) and (self.cells[y][x] == 0 or self.cells[y][x] < 1)
+        return self.point_is_on_board(x, y) and (0 <= self.cells[y][x] < 1)
 
     # returns the direct neighbors clockwise, starts with the left neighbor
     def get_neighbors(self, x, y):
