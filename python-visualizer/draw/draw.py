@@ -10,6 +10,7 @@ from game_data.player.PlayerState import PlayerState
 
 class Drawable(Enum):
     LOL = 1
+    RIP = 2
 
 
 class DrawingPatternPoint:
@@ -29,6 +30,9 @@ def get_pattern(drawing: Drawable, invert=False) -> List[DrawingPatternPoint]:
     pattern = []
     if drawing == Drawable.LOL:
         pattern = LOL_PATTERN.copy()
+    elif drawing == Drawable.RIP:
+        pattern = RIP_PATTERN.copy()
+
 
     if invert:
         pattern = [point.copy_invert() for point in pattern]
@@ -146,7 +150,6 @@ def __get_possible_actions(pattern, board, player_state, start_index) -> Dict[Pl
 
 def get_draw_action(drawing: Drawable, player_state: PlayerState, board: Board, start_index: int = 0) \
         -> List[Tuple[PlayerAction: int]]:
-
     # def return variable to return all possible actions
     possible_actions: List[Tuple[PlayerAction: int]] = []
 
@@ -161,7 +164,7 @@ def get_draw_action(drawing: Drawable, player_state: PlayerState, board: Board, 
         possible_actions += [(action, -new_start_index)
                              for action, new_start_index
                              in __get_possible_actions(inverted_pattern, board.copy(), player_state, abs(start_index))
-                                 .items()]
+                             .items()]
 
     # return possible actions with the next start_index
     return possible_actions
