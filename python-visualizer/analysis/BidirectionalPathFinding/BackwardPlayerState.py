@@ -1,58 +1,23 @@
-from enum import Enum
+from game_data.player.PlayerState import PlayerDirection
+from game_data.player.PlayerAction import PlayerAction
+from game_data.game.Board import Board
 from typing import Tuple
 
-from game_data.game.Board import Board
-from game_data.player.PlayerAction import PlayerAction
 
-
-class PlayerDirection(Enum):
-    UP = 1
-    RIGHT = 2
-    DOWN = 3
-    LEFT = 4
-
-    def turn(self, action: PlayerAction):
-        new_value = self.value
-        if action == PlayerAction.TURN_LEFT:
-            new_value -= 1
-            if new_value == 0:
-                new_value = PlayerDirection.LEFT.value
-        elif action == PlayerAction.TURN_RIGHT:
-            new_value += 1
-            if new_value == 5:
-                new_value = PlayerDirection.UP.value
-        return PlayerDirection(new_value)
-
-    def to_direction_tuple(self):
-        if self == PlayerDirection.UP:
-            return 0, -1
-        if self == PlayerDirection.DOWN:
-            return 0, 1
-        if self == PlayerDirection.LEFT:
-            return -1, 0
-        if self == PlayerDirection.RIGHT:
-            return 1, 0
-
-    def invert(self):
-        return PlayerDirection(((self.value + 2) % 4) + 1)
-
-
-class PlayerState:
-    def __init__(self, direction: PlayerDirection, speed: int, x_position: int, y_position: int, game_round: int = 1):
+class BackwardPlayerState:
+    def __init__(self, direction: PlayerDirection, speed: int, x_position: int, y_position: int, round_modulo: int = -1):
         self.direction = direction
         self.speed = speed
         self.position_x = x_position
         self.position_y = y_position
-        self.game_round = game_round
 
-        self.previous: [PlayerState] = []
+        self.previous: [BackwardPlayerState] = []
         self.all_steps = {(x_position, y_position): self}
         self.action = None
         self.steps_to_this_point = []
         self.collided_with_own_line = False
-        # This field is optional for algorithms that determine the risk for this step
-        self.optional_risk = 0.0
-        self.success_probability = 1.0
+
+        self.roundModulo = -1
 
     def do_action(self, action: PlayerAction):
         if self.action is not None:
@@ -66,36 +31,40 @@ class PlayerState:
         elif self.action == PlayerAction.SPEED_UP:
             self.speed += 1
 
-    def do_move(self) -> object:
+    def do_move(self, board: Board) -> object:
         if self.action is None:
             raise Exception('No action has been performed yet')
 
         child = self.copy()
         child.action = None
 
-        x_offset = 0
-        y_offset = 0
+        x_offset, y_offset = self.direction.to_direction_tuple()
 
         if self.direction == PlayerDirection.UP:
             child.position_y -= self.speed
-            y_offset = -1
         elif self.direction == PlayerDirection.RIGHT:
             child.position_x += self.speed
-            x_offset = 1
         elif self.direction == PlayerDirection.DOWN:
             child.position_y += self.speed
-            y_offset = 1
         elif self.direction == PlayerDirection.LEFT:
             child.position_x -= self.speed
-            x_offset = -1
 
         # Calculate the new steps
         child.steps_to_this_point = list(Board.get_points_in_rectangle(self.position_x + x_offset,
                                                                        self.position_y + y_offset,
                                                                        child.position_x,
                                                                        child.position_y))
+
+        jump_needed = False
+        for x, y in child.steps_to_this_point[1:-1]:
+            if board.point_is_available(x, y):
+                jump_needed = True
+
+        if jump_needed and self.roundModulo == -1:
+            self.roundModulo = 0
+
         # Remove the jumped over cells
-        do_jump = self.game_round % 6 == 0
+        do_jump = self.roundModulo == 0
         while do_jump and len(child.steps_to_this_point) > 2:
             child.steps_to_this_point.pop(1)
 
@@ -108,8 +77,11 @@ class PlayerState:
             if not child.collided_with_own_line:
                 child.all_steps.setdefault(step, child)
 
-        # Increase round number
-        child.game_round += 1
+        # Increase round modulo
+        if self.roundModulo == -1:
+            child.roundModulo = -1
+        else:
+            child.roundModulo = (self.roundModulo + 1) % 6
 
         return child
 
@@ -137,14 +109,12 @@ class PlayerState:
         return self.position_x, self.position_y
 
     def copy(self):
-        copy = PlayerState(self.direction, self.speed, self.position_x, self.position_y, self.game_round)
+        copy = BackwardPlayerState(self.direction, self.speed, self.position_x, self.position_y, self.roundModulo)
         copy.previous = self.previous.copy()
         copy.action = self.action
         copy.all_steps = self.all_steps.copy()
         copy.steps_to_this_point = self.steps_to_this_point.copy()
-        copy.optional_risk = self.optional_risk
-        copy.success_probability = self.success_probability
         return copy
 
     def __str__(self):
-        return f'pos = ({self.position_x}, {self.position_y}), speed = {self.speed}, direction = {self.direction}, round = {self.game_round}'
+        return f'pos = ({self.position_x}, {self.position_y}), speed = {self.speed}, direction = {self.direction}, modulo = {self.roundModulo}'

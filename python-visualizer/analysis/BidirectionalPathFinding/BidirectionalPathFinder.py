@@ -27,12 +27,13 @@ class BidirectionalPathFinder:
 
     def initialize_forward_actions(self, depth: int):
         action_array = list(PlayerAction)
-        argument_array = [(self.baseState, action, 5) for action in action_array]
+        argument_array = [(self.baseState, action, depth) for action in action_array]
         pool = mp.Pool(mp.cpu_count())
         result_array = pool.starmap(self.__recursive_forward_search, argument_array)
         result = {}
         for idx in range(len(action_array)):
             result[action_array[idx]] = result_array[idx]
+        self.intakeMap = result
 
     def __recursive_forward_search(self, local_base_state: PlayerState, action: PlayerAction,
                                    max_depth: int, current_depth: int = 0) \
