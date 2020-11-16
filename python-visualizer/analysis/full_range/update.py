@@ -12,8 +12,14 @@ def update_full_range_result(current_game_round: int,
     for position, directions in full_range_result.items():
         for direction, speeds in directions.items():
             for speed, state in speeds.items():
+                state_step_list = state.previous + [state]
+
+                # discard, if the state is in the past
+                if len(state_step_list) < current_game_round:
+                    continue
+
                 # discard, if this path originates not from the chosen action
-                if (state.previous + [state])[current_game_round - 1].get_position_tuple() != current_position:
+                if state_step_list[current_game_round - 1].get_position_tuple() != current_position:
                     continue
 
                 # discard if one of the new_occupied_cells is needed for this path

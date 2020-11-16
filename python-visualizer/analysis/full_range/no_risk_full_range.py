@@ -6,11 +6,18 @@ from game_data.game.Board import Board
 from game_data.player.PlayerState import PlayerDirection, PlayerState
 
 
-def calculate_ranges_for_player(board: Board, initial_state: PlayerState, lookup_round_count: int = -1) \
+def calculate_ranges_for_player(board: Board, initial_state: PlayerState, lookup_round_count: int = -1,
+                                updated_last_result=None) \
         -> Dict[Tuple[int, int], Dict[PlayerDirection, Dict[int, PlayerState]]]:
+    if updated_last_result is None:
+        updated_last_result = {}
 
-    result_data = {}
+    result_data = updated_last_result
     next_states = [initial_state]
+    next_states += [state
+                    for directions in result_data.values()
+                    for speeds in directions.values()
+                    for state in speeds.values()]
 
     current_round = 0
     while len(next_states) > 0 and lookup_round_count != current_round:
@@ -27,4 +34,3 @@ if __name__ == "__main__":
     end = time.time()
     print(F"total seconds: {end - start}")
     print(F"end full_range   @{datetime.now().time()}")
-
