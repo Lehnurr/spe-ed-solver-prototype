@@ -8,12 +8,13 @@ import numpy as np
 from typing import Dict, Tuple, Set
 from collections import namedtuple
 import math
+import time
 
 
 Intake = namedtuple("Intake", "x y direction speed round_modulo")
 
 
-def recursive_forward_search(board: Board, processing_set: Set[Tuple[int, int]], local_base_state: PlayerState,
+def recursive_forward_search(board: Board, local_base_state: PlayerState,
                              action: PlayerAction, max_depth: int, current_depth: int = 0) \
         -> Dict[Intake, PlayerState]:
     local_state_copy = local_base_state.copy()
@@ -26,30 +27,33 @@ def recursive_forward_search(board: Board, processing_set: Set[Tuple[int, int]],
 
         if current_depth <= max_depth:
             for action in PlayerAction:
-                result.update(recursive_forward_search(board, processing_set, local_next_state, action, max_depth,
+                result.update(recursive_forward_search(board, local_next_state, action, max_depth,
                                                        current_depth + 1))
 
         intake = Intake(local_next_state.position_x, local_next_state.position_y, local_next_state.direction,
                         local_next_state.speed, local_next_state.game_round % 6)
         result[intake] = local_next_state
-        processing_set.discard((local_next_state.position_x, local_next_state.position_y))
 
     return result
 
 
-def backward_aggregate_paths(base_state: PlayerState, share: list) -> Dict[Intake, PlayerState]:
+def backward_aggregate_paths(base_state: PlayerState, share: list, timeout: float) -> Dict[Intake, PlayerState]:
 
     process_priority_queue = []
     for x, y in share:
         heapq.heappush(process_priority_queue,
-                       (x - base_state.position_x + y - base_state.position_y, x, y))
+                       (abs(x - base_state.position_x) + abs(y - base_state.position_y), x, y))
+
+    start_time = time.time()
+    while time.time() - start_time < timeout:
+        pass
 
     return {}
 
 
 class BidirectionalPathFinder:
 
-    def __init__(self, board: Board, search_depth: int):
+    def __init__(self, board: Board, search_depth: int, timeout: float):
         self.actionIntakeMaps = {}
         self.processingSet = set()
         self.board = board
@@ -57,17 +61,18 @@ class BidirectionalPathFinder:
         self.pointsToProcess = []
 
         self.searchDepth = search_depth
+        self.timeout = timeout
 
     def update(self, board: Board, player_state: PlayerState):
         self.baseState = player_state
         self.board = board
-        self.processingSet = {(point[1], point[0]) for point in np.argwhere(np.array(self.board.cells) != 0).tolist()}
+        self.processingSet = {(point[1], point[0]) for point in np.argwhere(np.array(self.board.cells) == 0).tolist()}
         self.__initialize_forward_actions(self.searchDepth)
-        self.__aggregate_paths()
+        self.__aggregate_paths(self.timeout)
 
     def __initialize_forward_actions(self, depth: int):
         action_array = list(PlayerAction)
-        argument_array = [(self.board, self.processingSet, self.baseState, action, depth) for action in action_array]
+        argument_array = [(self.board, self.baseState, action, depth) for action in action_array]
         pool = mp.Pool(mp.cpu_count())
         result_array = pool.starmap(recursive_forward_search, argument_array)
         result = {}
@@ -75,7 +80,7 @@ class BidirectionalPathFinder:
             result[action_array[idx]] = result_array[idx]
         self.actionIntakeMaps = result
 
-    def __aggregate_paths(self):
+    def __aggregate_paths(self, timeout: float):
 
         total_points = list(self.processingSet)
 
@@ -86,7 +91,7 @@ class BidirectionalPathFinder:
         shares = np.array_split(total_points, mp.cpu_count())
 
         pool = mp.Pool(mp.cpu_count())
-        arguments = [(self.baseState, share) for share in shares]
+        arguments = [(self.baseState, share, timeout) for share in shares]
         result_array = pool.starmap(backward_aggregate_paths, arguments)
 
     def get_result_map(self) -> Dict[PlayerAction, np.ndarray]:

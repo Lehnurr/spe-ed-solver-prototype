@@ -38,7 +38,7 @@ class CorridorCombinedBidirectionalPathPlayer(BasePlayer):
                                            own_player["x"],
                                            own_player["y"],
                                            self.roundCounter)
-            self.pathFinder = BidirectionalPathFinder(self.board, 5)
+            self.pathFinder = BidirectionalPathFinder(self.board, 5, 2)
 
         # update cells
         self.board.cells = step_info["cells"]
