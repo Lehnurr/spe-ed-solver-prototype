@@ -1,8 +1,6 @@
-from draw.draw import DrawingPatternPoint
+from draw.DrawingPatternPoint import DrawingPatternPoint
 
 RIP_PATTERN = [
-    DrawingPatternPoint(1, 0, False),
-    DrawingPatternPoint(1, 0, False),
     DrawingPatternPoint(0, -1, True),
     DrawingPatternPoint(0, -1, True),
     DrawingPatternPoint(0, -1, True),
@@ -48,12 +46,12 @@ RIP_PATTERN = [
     DrawingPatternPoint(0, 1, True),
     DrawingPatternPoint(-1, 0, True),
     DrawingPatternPoint(-1, 0, True),
-    DrawingPatternPoint(0, 1, False),
-    DrawingPatternPoint(0, 1, False),
-    DrawingPatternPoint(0, 1, False),
-    DrawingPatternPoint(1, 0, False),
-    DrawingPatternPoint(1, 0, False),
-    DrawingPatternPoint(1, 0, False),
-    DrawingPatternPoint(1, 0, False),
-    DrawingPatternPoint(1, 0, False),
+    DrawingPatternPoint(0, 1, True),
+    DrawingPatternPoint(0, 1, True),
+    DrawingPatternPoint(0, 1, True),
+    DrawingPatternPoint(1, 0, True),
+    DrawingPatternPoint(1, 0, True),
+    DrawingPatternPoint(1, 0, True),
+    DrawingPatternPoint(1, 0, True),
+    DrawingPatternPoint(1, 0, True),
 ]

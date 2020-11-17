@@ -1,6 +1,7 @@
 from analysis.enemy.EnemyCollection import EnemyCollection
 from analysis.full_range import no_risk_full_range
 from analysis.full_range.update import update_full_range_result
+from draw.draw import get_draw_action, Drawable
 from players.BasePlayer import BasePlayer
 from game_data.player.PlayerAction import PlayerAction
 import random
@@ -18,6 +19,7 @@ class RandomFullRangePlayer(BasePlayer):
         self.playerState = None
         self.enemies = EnemyCollection()
         self.full_range_result = None
+        self.draw_index = 0
 
     def handle_step(self, step_info, slice_viewer):
         new_occupied_cells = self.enemies.update(step_info)
@@ -62,16 +64,27 @@ class RandomFullRangePlayer(BasePlayer):
             slice_viewer.add_data("recycled_full_range_steps", new_path_steps_array)
 
         # calculate action
-        self.full_range_result = no_risk_full_range.calculate_ranges_for_player(self.board, self.playerState)
+        self.full_range_result = no_risk_full_range.calculate_ranges_for_player(self.board, self.playerState, 8)
         path_options = [state
                         for directions in self.full_range_result.values()
                         for speeds in directions.values()
                         for state in speeds.values()]
 
         if len(path_options) > 0:
-            random_player_state_choice = random.choice(path_options)
-            player_states = random_player_state_choice.previous + [random_player_state_choice]
-            action = player_states[self.roundCounter - 1].action
+            actions = []
+            if step_info["you"] == 1:
+                actions = get_draw_action(Drawable.LOL, self.playerState, self.board, self.draw_index)
+            elif step_info["you"] == 2:
+                actions = get_draw_action(Drawable.RIP, self.playerState, self.board, self.draw_index)
+
+            if len(actions) > 0:
+                choice = max(actions, key=lambda a: abs(a[1]))
+                action = choice[0]
+                self.draw_index = choice[1]
+            else:
+                random_player_state_choice = random.choice(path_options)
+                player_states = random_player_state_choice.previous + [random_player_state_choice]
+                action = player_states[self.roundCounter - 1].action
 
         # random action if no way to survive
         else:
