@@ -116,5 +116,8 @@ class BackwardPlayerState:
         copy.steps_to_this_point = self.steps_to_this_point.copy()
         return copy
 
+    def __lt__(self, other):
+        return id(self) < id(other)
+
     def __str__(self):
         return f'pos = ({self.position_x}, {self.position_y}), speed = {self.speed}, direction = {self.direction}, modulo = {self.roundModulo}'
