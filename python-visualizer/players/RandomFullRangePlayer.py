@@ -71,20 +71,9 @@ class RandomFullRangePlayer(BasePlayer):
                         for state in speeds.values()]
 
         if len(path_options) > 0:
-            actions = []
-            if step_info["you"] == 1:
-                actions = get_draw_action(Drawable.LOL, self.playerState, self.board, self.draw_index)
-            elif step_info["you"] == 2:
-                actions = get_draw_action(Drawable.RIP, self.playerState, self.board, self.draw_index)
-
-            if len(actions) > 0:
-                choice = max(actions, key=lambda a: abs(a[1]))
-                action = choice[0]
-                self.draw_index = choice[1]
-            else:
-                random_player_state_choice = random.choice(path_options)
-                player_states = random_player_state_choice.previous + [random_player_state_choice]
-                action = player_states[self.roundCounter - 1].action
+            random_player_state_choice = random.choice(path_options)
+            player_states = random_player_state_choice.previous + [random_player_state_choice]
+            action = player_states[self.roundCounter - 1].action
 
         # random action if no way to survive
         else:
