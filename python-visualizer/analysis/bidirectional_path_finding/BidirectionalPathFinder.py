@@ -13,6 +13,7 @@ import time
 
 Intake = namedtuple("Intake", "x y direction speed round_modulo")
 
+STEPS_FILL_VALUE = 100000
 MAX_STATE_CALCULATIONS_PER_POINT = 100
 
 
@@ -20,9 +21,9 @@ def manhattan_distance_2d(v1: Tuple[float, float], v2: Tuple[float, float]) -> f
     return abs(v1[0] - v2[0]) + abs(v1[1] - v2[1])
 
 
-def recursive_forward_search(board: Board, local_base_state: PlayerState,
-                             action: PlayerAction, max_depth: int, current_depth: int = 0) \
-        -> Dict[Intake, PlayerState]:
+def recursive_forward_search(board: Board, local_base_state: PlayerState, action: PlayerAction, start_round: int,
+                             max_depth: int, current_depth: int = 0) \
+        -> Dict[Intake, Tuple[int, float]]:
     local_state_copy = local_base_state.copy()
     local_state_copy.do_action(action)
     local_next_state = local_state_copy.do_move()
@@ -33,12 +34,12 @@ def recursive_forward_search(board: Board, local_base_state: PlayerState,
 
         if current_depth <= max_depth:
             for action in PlayerAction:
-                result.update(recursive_forward_search(board, local_next_state, action, max_depth,
+                result.update(recursive_forward_search(board, local_next_state, action, start_round, max_depth,
                                                        current_depth + 1))
 
         intake = Intake(local_next_state.position_x, local_next_state.position_y, local_next_state.direction,
                         local_next_state.speed, local_next_state.game_round % 6)
-        result[intake] = local_next_state
+        result[intake] = (local_next_state.game_round - start_round, 0.)
 
     return result
 
@@ -49,13 +50,16 @@ def calculate_target_center(target_dict: Dict[PlayerAction, Tuple[int, int]]) ->
     for x, y in target_dict.values():
         x_sum += x
         y_sum += y
-    elem_count = len(target_dict)
+    elem_count = max(len(target_dict), 1)
     return x_sum / elem_count, y_sum / elem_count
 
 
 def backward_aggregate_paths(target_dict: Dict[PlayerAction, Tuple[int, int]], share: list, board: Board,
-                             action_intake_map: Dict[PlayerAction, Dict[Intake, PlayerState]], timeout: float) \
-        -> Dict[Intake, PlayerState]:
+                             action_intake_map: Dict[PlayerAction, Dict[Intake, Tuple[int, float]]], timeout: float) \
+        -> Dict[PlayerAction, Tuple[np.ndarray, np.ndarray]]:
+
+    result = {action: (np.ones((board.height, board.width)) * STEPS_FILL_VALUE, np.zeros((board.height, board.width)))
+              for action in PlayerAction}
 
     global_target_center = calculate_target_center(target_dict)
 
@@ -82,14 +86,40 @@ def backward_aggregate_paths(target_dict: Dict[PlayerAction, Tuple[int, int]], s
             priority, backward_state = heapq.heappop(local_queue)
 
             if backward_state.verify_move(board):
-                # check for possible intakes
-                for action in local_target_dict.keys():
-                    if backward_state.roundModulo != -1:
-                        intake = Intake(backward_state.position_x, backward_state.position_y,
-                                        backward_state.direction.invert(), backward_state.speed,
-                                        backward_state.roundModulo)
-                        if intake in action_intake_map[action].keys():
-                            print("exists")
+
+                # gather for possible intakes
+                if backward_state.roundModulo == -1:
+                    intake_checks = [Intake(backward_state.position_x, backward_state.position_y,
+                                     backward_state.direction.invert(), backward_state.speed,
+                                     round_modulo) for round_modulo in range(0, 6)]
+                else:
+                    intake_checks = [Intake(backward_state.position_x, backward_state.position_y,
+                                     backward_state.direction.invert(), backward_state.speed,
+                                     backward_state.roundModulo)]
+
+                # check if intakes exist for actions
+                for action in list(local_target_dict.keys()):
+                    recalculate_target = False
+                    for intake_check in intake_checks:
+                        if intake_check in action_intake_map[action].keys():
+
+                            # recalculate target
+                            recalculate_target = True
+
+                            # save new intakes
+                            steps, rating = action_intake_map[action][intake_check]
+                            for prev_state in reversed(backward_state.previous):
+                                steps += 1
+                                intake = Intake(prev_state.position_x, prev_state.position_y,
+                                                prev_state.direction.invert(), prev_state.speed,
+                                                prev_state.roundModulo)
+                                action_intake_map[action][intake] = (steps, rating)
+                                result[action][0][prev_state.position_y, prev_state.position_x] = \
+                                    min(result[action][0][prev_state.position_y, prev_state.position_x], steps)
+
+                    if recalculate_target:
+                        local_target_dict.pop(action)
+                        local_target_center = calculate_target_center(local_target_dict)
 
                 # add children
                 for action in PlayerAction:
@@ -100,7 +130,7 @@ def backward_aggregate_paths(target_dict: Dict[PlayerAction, Tuple[int, int]], s
                         manhattan_distance_2d((next_state.position_x, next_state.position_y), local_target_center)
                     heapq.heappush(local_queue, (next_priority, next_state))
 
-    return {}
+    return result
 
 
 class BidirectionalPathFinder:
@@ -115,6 +145,9 @@ class BidirectionalPathFinder:
         self.searchDepth = search_depth
         self.timeout = timeout
 
+        self.result_steps_map = {}
+        self.result_rating_map = {}
+
     def update(self, board: Board, player_state: PlayerState):
         self.baseState = player_state
         self.board = board
@@ -124,7 +157,7 @@ class BidirectionalPathFinder:
 
     def __initialize_forward_actions(self, depth: int):
         action_array = list(PlayerAction)
-        argument_array = [(self.board, self.baseState, action, depth) for action in action_array]
+        argument_array = [(self.board, self.baseState, action, self.baseState.game_round, depth) for action in action_array]
         pool = mp.Pool(mp.cpu_count())
         result_array = pool.starmap(recursive_forward_search, argument_array)
         result = {}
@@ -156,11 +189,23 @@ class BidirectionalPathFinder:
         arguments = [(target_dict, share, self.board, self.actionIntakeMaps, timeout) for share in shares]
         result_array = pool.starmap(backward_aggregate_paths, arguments)
 
-    def get_result_map(self) -> Dict[PlayerAction, np.ndarray]:
-        result = {}
-        for action, intake_map in self.actionIntakeMaps.items():
-            array = np.zeros((self.board.height, self.board.width))
-            for intake in intake_map.keys():
-                array[intake.y, intake.x] = 1
-            result[action] = array
-        return result
+        # save results
+        steps_result = {action: np.ones((self.board.height, self.board.width)) * STEPS_FILL_VALUE
+                        for action in PlayerAction}
+        rating_result = {action: np.zeros((self.board.height, self.board.width))
+                         for action in PlayerAction}
+        for result in result_array:
+            for action in PlayerAction:
+                steps_result[action] = np.minimum(steps_result[action], result[action][0])
+                rating_result[action] = np.maximum(rating_result[action], result[action][1])
+
+        for action in PlayerAction:
+            steps_result[action][steps_result[action] >= STEPS_FILL_VALUE] = 0
+        self.result_steps_map = steps_result
+        self.result_rating_map = rating_result
+
+    def get_result_steps_map(self) -> Dict[PlayerAction, np.ndarray]:
+        return self.result_steps_map
+
+    def get_result_rating_map(self) -> Dict[PlayerAction, np.ndarray]:
+        return self.result_rating_map

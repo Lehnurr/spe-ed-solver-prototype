@@ -63,27 +63,16 @@ class CorridorCombinedBidirectionalPathPlayer(BasePlayer):
         slice_viewer.add_data("enemy_probability", enemy_probabilities, normalize=False)
         slice_viewer.add_data("enemy_min_steps", enemy_min_steps, normalize=True)
 
-        # add safe_area sizes to viewer
-        safe_areas, safe_area_labels = get_risk_evaluated_safe_areas(self.board)
-        safe_area_sizes = np.zeros(safe_area_labels.shape)
-        for area in safe_areas:
-            for point in area.points:
-                safe_area_sizes[point[1], point[0]] = area.risk
-
-        slice_viewer.add_data("safe_area_sizes", safe_area_sizes, normalize=False)
-
-        # add risk_area to viewer
-        slice_viewer.add_data("risk_evaluation", risk_area_calculation.calculate_risk_areas(self.board), normalize=False)
-
         # get path finder results for each possible action
         self.pathFinder.update(self.board, self.playerState)
-        path_finder_result_map = self.pathFinder.get_result_map()
+        path_finder_rating_result_map = self.pathFinder.get_result_rating_map()
+        path_finder_steps_result_map = self.pathFinder.get_result_steps_map()
 
         # calculate reachable points for full range results
         max_reachable_points_value = \
-            max(max([np.sum(result) for result in path_finder_result_map.values()]), 1)
+            max(max([np.sum(result) for result in path_finder_rating_result_map.values()]), 1)
         reachable_points = {player_action: np.sum(result) / max_reachable_points_value
-                            for player_action, result in path_finder_result_map.items()}
+                            for player_action, result in path_finder_rating_result_map.items()}
 
         # calculate action distribution for full range results
         fill_distribution = corridor_fill_detection.determine_fill_values(self.playerState, self.board)
@@ -111,8 +100,8 @@ class CorridorCombinedBidirectionalPathPlayer(BasePlayer):
         action = max(weighted_action_evaluation, key=weighted_action_evaluation.get)
 
         # add reachable points to viewer
-        selected_reachable_points = path_finder_result_map[action]
-        slice_viewer.add_data("full_range_probability", selected_reachable_points, normalize=False)
+        slice_viewer.add_data("reachable_points_rating", path_finder_rating_result_map[action], normalize=False)
+        slice_viewer.add_data("reachable_points_steps", path_finder_steps_result_map[action], normalize=True)
 
         # apply action to local model
         self.playerState.do_action(action)
@@ -121,4 +110,4 @@ class CorridorCombinedBidirectionalPathPlayer(BasePlayer):
         return action
 
     def get_slice_viewer_attributes(self):
-        return ["full_range_probability", "enemy_probability", "enemy_min_steps", "safe_area_sizes", "risk_evaluation"]
+        return ["reachable_points_rating", "reachable_points_steps", "enemy_probability", "enemy_min_steps"]
