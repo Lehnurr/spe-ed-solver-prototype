@@ -64,7 +64,7 @@ class CorridorCombinedBidirectionalPathPlayer(BasePlayer):
         slice_viewer.add_data("enemy_min_steps", enemy_min_steps, normalize=True)
 
         # get path finder results for each possible action
-        self.pathFinder.update(self.board, self.playerState)
+        self.pathFinder.update(self.board, self.playerState, enemy_probabilities, enemy_min_steps)
         path_finder_rating_result_map = self.pathFinder.get_result_rating_map()
         path_finder_steps_result_map = self.pathFinder.get_result_steps_map()
 

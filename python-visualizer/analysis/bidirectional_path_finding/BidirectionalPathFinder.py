@@ -22,6 +22,7 @@ def manhattan_distance_2d(v1: Tuple[float, float], v2: Tuple[float, float]) -> f
 
 
 def recursive_forward_search(board: Board, local_base_state: PlayerState, action: PlayerAction, start_round: int,
+                             enemy_probability: np.ndarray, enemy_min_steps: np.ndarray,
                              max_depth: int, current_depth: int = 0) \
         -> Dict[Intake, Tuple[int, float]]:
     local_state_copy = local_base_state.copy()
@@ -34,12 +35,21 @@ def recursive_forward_search(board: Board, local_base_state: PlayerState, action
 
         if current_depth <= max_depth:
             for action in PlayerAction:
-                result.update(recursive_forward_search(board, local_next_state, action, start_round, max_depth,
-                                                       current_depth + 1))
+                result.update(recursive_forward_search(board, local_next_state, action, start_round,
+                                                       enemy_probability, enemy_min_steps,
+                                                       max_depth, current_depth + 1))
+
+        max_probability = 0
+        for x, y in local_next_state.steps_to_this_point:
+            if enemy_min_steps[y, x] < current_depth:
+                max_probability = max(max_probability, enemy_probability[y, x])
+        rating = (1 - max_probability) * local_base_state.success_probability
+        local_next_state.success_probability = rating
 
         intake = Intake(local_next_state.position_x, local_next_state.position_y, local_next_state.direction,
                         local_next_state.speed, local_next_state.game_round % 6)
-        result[intake] = (local_next_state.game_round - start_round, 0.)
+        if not (intake in result.keys() and rating > result[intake][1]):
+            result[intake] = (local_next_state.game_round - start_round, rating)
 
     return result
 
@@ -55,6 +65,7 @@ def calculate_target_center(target_dict: Dict[PlayerAction, Tuple[int, int]]) ->
 
 
 def backward_aggregate_paths(target_dict: Dict[PlayerAction, Tuple[int, int]], share: list, board: Board,
+                             enemy_probability: np.ndarray, enemy_min_steps: np.ndarray,
                              action_intake_map: Dict[PlayerAction, Dict[Intake, Tuple[int, float]]], timeout: float) \
         -> Dict[PlayerAction, Tuple[np.ndarray, np.ndarray]]:
 
@@ -108,14 +119,25 @@ def backward_aggregate_paths(target_dict: Dict[PlayerAction, Tuple[int, int]], s
 
                             # save new intakes
                             steps, rating = action_intake_map[action][intake_check]
-                            for prev_state in reversed(backward_state.previous):
+                            for prev_state in reversed([backward_state] + backward_state.previous):
+
+                                x_base, y_base = prev_state.position_x, prev_state.position_y
                                 steps += 1
-                                intake = Intake(prev_state.position_x, prev_state.position_y,
-                                                prev_state.direction.invert(), prev_state.speed,
-                                                prev_state.roundModulo)
-                                action_intake_map[action][intake] = (steps, rating)
-                                result[action][0][prev_state.position_y, prev_state.position_x] = \
-                                    min(result[action][0][prev_state.position_y, prev_state.position_x], steps)
+
+                                max_probability = 0
+                                for x, y in prev_state.steps_to_this_point:
+                                    if enemy_min_steps[y, x] < steps:
+                                        max_probability = max(max_probability, enemy_probability[y, x])
+                                rating *= 1 - max_probability
+
+                                new_intake = Intake(x_base, y_base, prev_state.direction.invert(), prev_state.speed,
+                                                    prev_state.roundModulo)
+
+                                if new_intake not in action_intake_map[action].keys() or \
+                                        action_intake_map[action][new_intake][1] > rating:
+                                    action_intake_map[action][new_intake] = (steps, rating)
+                                    result[action][0][y_base, x_base] = steps
+                                    result[action][1][y_base, x_base] = rating
 
                     if recalculate_target:
                         local_target_dict.pop(action)
@@ -148,16 +170,17 @@ class BidirectionalPathFinder:
         self.result_steps_map = {}
         self.result_rating_map = {}
 
-    def update(self, board: Board, player_state: PlayerState):
+    def update(self, board: Board, player_state: PlayerState, enemy_probability: np.ndarray, enemy_min_steps: np.ndarray):
         self.baseState = player_state
         self.board = board
         self.processingSet = {(point[1], point[0]) for point in np.argwhere(np.array(self.board.cells) == 0).tolist()}
-        self.__initialize_forward_actions(self.searchDepth)
-        self.__aggregate_paths(self.timeout)
+        self.__initialize_forward_actions(enemy_probability, enemy_min_steps, self.searchDepth)
+        self.__aggregate_paths(self.timeout, enemy_probability, enemy_min_steps)
 
-    def __initialize_forward_actions(self, depth: int):
+    def __initialize_forward_actions(self, enemy_probability: np.ndarray, enemy_min_steps: np.ndarray, depth: int):
         action_array = list(PlayerAction)
-        argument_array = [(self.board, self.baseState, action, self.baseState.game_round, depth) for action in action_array]
+        argument_array = [(self.board, self.baseState, action, self.baseState.game_round, enemy_probability, enemy_min_steps, depth)
+                          for action in action_array]
         pool = mp.Pool(mp.cpu_count())
         result_array = pool.starmap(recursive_forward_search, argument_array)
         result = {}
@@ -165,7 +188,7 @@ class BidirectionalPathFinder:
             result[action_array[idx]] = result_array[idx]
         self.actionIntakeMaps = result
 
-    def __aggregate_paths(self, timeout: float):
+    def __aggregate_paths(self, timeout: float, enemy_probability: np.ndarray, enemy_min_steps: np.ndarray):
 
         total_points = list(self.processingSet)
 
@@ -186,7 +209,8 @@ class BidirectionalPathFinder:
 
         # launch processes
         pool = mp.Pool(mp.cpu_count())
-        arguments = [(target_dict, share, self.board, self.actionIntakeMaps, timeout) for share in shares]
+        arguments = [(target_dict, share, self.board, enemy_probability, enemy_min_steps, self.actionIntakeMaps, timeout)
+                     for share in shares]
         result_array = pool.starmap(backward_aggregate_paths, arguments)
 
         # save results
