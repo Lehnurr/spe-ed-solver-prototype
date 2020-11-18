@@ -183,6 +183,8 @@ class BidirectionalPathFinder:
                           for action in action_array]
         pool = mp.Pool(mp.cpu_count())
         result_array = pool.starmap(recursive_forward_search, argument_array)
+        pool.close()
+        pool.join()
         result = {}
         for idx in range(len(action_array)):
             result[action_array[idx]] = result_array[idx]
@@ -212,6 +214,8 @@ class BidirectionalPathFinder:
         arguments = [(target_dict, share, self.board, enemy_probability, enemy_min_steps, self.actionIntakeMaps, timeout)
                      for share in shares]
         result_array = pool.starmap(backward_aggregate_paths, arguments)
+        pool.close()
+        pool.join()
 
         # save results
         steps_result = {action: np.ones((self.board.height, self.board.width)) * STEPS_FILL_VALUE
