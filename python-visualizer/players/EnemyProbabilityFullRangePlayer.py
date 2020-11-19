@@ -4,7 +4,7 @@ from players.BasePlayer import BasePlayer
 from game_data.player.PlayerAction import PlayerAction
 import random
 from analysis import probability_based_prediction
-from analysis.area_detection import safe_area_detection, risk_area_calculation
+from analysis.area_detection import risk_area_calculation
 from game_data.player.PlayerState import PlayerState
 from game_data.player.PlayerState import PlayerDirection
 from game_data.game.Board import Board

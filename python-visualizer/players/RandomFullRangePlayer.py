@@ -1,7 +1,6 @@
 from analysis.enemy.EnemyCollection import EnemyCollection
 from analysis.full_range import no_risk_full_range
 from analysis.full_range.update import update_full_range_result
-from draw.draw import get_draw_action, Drawable
 from players.BasePlayer import BasePlayer
 from game_data.player.PlayerAction import PlayerAction
 import random

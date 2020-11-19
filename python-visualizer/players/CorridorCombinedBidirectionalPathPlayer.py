@@ -1,15 +1,12 @@
-from analysis.area_detection.safe_and_risk_area_combination import get_risk_evaluated_safe_areas
 from players.BasePlayer import BasePlayer
 from game_data.player.PlayerAction import PlayerAction
 from analysis.bidirectional_path_finding.BidirectionalPathFinder import BidirectionalPathFinder
 from analysis import probability_based_prediction
-from analysis.area_detection import risk_area_calculation
 from analysis.fill import corridor_fill_detection
 from game_data.player.PlayerState import PlayerState
 from game_data.player.PlayerState import PlayerDirection
 from game_data.game.Board import Board
 import numpy as np
-import multiprocessing as mp
 
 
 class CorridorCombinedBidirectionalPathPlayer(BasePlayer):
