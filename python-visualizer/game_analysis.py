@@ -69,7 +69,7 @@ async def play():
             deadline = datetime.strptime(state["deadline"], '%Y-%m-%dT%H:%M:%SZ')
             available_millis = (deadline - transform_to_server_time(datetime.now())) / timedelta(milliseconds=1)
             print(f"\tavailable milliseconds: %d" % available_millis)
-            append_to_csv(time_file_name, [available_millis])
+            append_to_csv(time_file_name, [int(available_millis)])
 
             action_json = json.dumps({"action": "change_nothing"})
             await websocket.send(action_json)
