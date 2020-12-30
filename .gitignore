@@ -134,3 +134,6 @@ config_local.py
 
 # ignore local todo files
 todo.txt
+
+# ignore local analysis data
+.data

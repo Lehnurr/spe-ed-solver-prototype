@@ -34,5 +34,4 @@ if os.path.exists(os.path.join(os.path.dirname(__file__), 'config_local.py')):
     from config_local import *
 
 # game analysis paths
-GAME_ANALYSIS_SIZE_PATH = "../.data/size"
-GAME_ANALYSIS_TIME_PATH = "../.data/time"
+GAME_ANALYSIS_DIRECTORY_PATH = "../.data/"
