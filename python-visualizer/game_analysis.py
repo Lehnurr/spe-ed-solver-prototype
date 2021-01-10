@@ -9,9 +9,6 @@ from csv import writer
 
 import config
 
-
-MAX_ROUNDS = 100
-
 def append_to_csv(file_name: str, elements):
     with open(file_name, 'a+', newline='') as write:
         csv_writer = writer(write)
@@ -63,7 +60,7 @@ async def play():
                 append_to_csv(board_size_file_name, [state["width"], state["height"]])
             rounds += 1
 
-            if not state["running"] or rounds >= MAX_ROUNDS:
+            if not state["running"]:
                 break
 
             deadline = datetime.strptime(state["deadline"], '%Y-%m-%dT%H:%M:%SZ')
