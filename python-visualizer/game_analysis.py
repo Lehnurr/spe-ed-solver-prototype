@@ -78,3 +78,4 @@ while True:
     except Exception as e:
         print(e)
         print("Connection was interrupted!")
+    time.sleep(5)
