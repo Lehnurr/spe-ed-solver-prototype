@@ -10,6 +10,10 @@ import traceback
 
 import config
 
+
+MAX_ROUND = 25
+
+
 def append_to_csv(file_name: str, elements):
     with open(file_name, 'a+', newline='') as write:
         csv_writer = writer(write)
@@ -61,7 +65,7 @@ async def play():
                 append_to_csv(board_size_file_name, [state["width"], state["height"]])
             rounds += 1
 
-            if not state["running"]:
+            if not state["running"] or rounds == MAX_ROUND:
                 break
 
             deadline = datetime.strptime(state["deadline"], '%Y-%m-%dT%H:%M:%SZ')
@@ -69,7 +73,7 @@ async def play():
             print(f"\tavailable milliseconds: %d" % available_millis)
             append_to_csv(time_file_name, [int(available_millis)])
 
-            action_json = json.dumps({"action": "change_nothing"})
+            action_json = json.dumps({"action": "turn_right"})
             await websocket.send(action_json)
 
 
