@@ -6,6 +6,7 @@ import os
 import websockets
 import requests
 from csv import writer
+import traceback
 
 import config
 
@@ -77,5 +78,6 @@ while True:
         asyncio.get_event_loop().run_until_complete(play())
     except Exception as e:
         print(e)
+        traceback.print_exc()
         print("Connection was interrupted!")
     time.sleep(5)
